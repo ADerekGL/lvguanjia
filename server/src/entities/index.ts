@@ -1,0 +1,10 @@
+export { Hotel } from './hotel.entity';
+export { User } from './user.entity';
+export { Room } from './room.entity';
+export { Message } from './message.entity';
+export { Product } from './product.entity';
+export { Order } from './order.entity';
+export { OrderItem } from './order-item.entity';
+export { ServiceType } from './service-type.entity';
+export { ServiceRequest } from './service-request.entity';
+export { Payment } from './payment.entity';

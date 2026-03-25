@@ -1,0 +1,47 @@
+{
+  "name": "smart-hotel-platform",
+  "version": "1.0.0",
+  "description": "智慧酒店管家服务平台",
+  "private": true,
+  "scripts": {
+    "install:all": "npm run install:server && npm run install:web",
+    "install:server": "cd server && npm install",
+    "install:web": "cd web && npm install",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:web\"",
+    "dev:server": "cd server && npm run start:dev",
+    "dev:web": "cd web && npm start",
+    "build": "npm run build:server && npm run build:web",
+    "build:server": "cd server && npm run build",
+    "build:web": "cd web && npm run build",
+    "test": "npm run test:server && npm run test:web",
+    "test:server": "cd server && npm run test",
+    "test:web": "cd web && npm run test",
+    "lint": "npm run lint:server && npm run lint:web",
+    "lint:server": "cd server && npm run lint",
+    "lint:web": "cd web && npm run lint",
+    "format": "npm run format:server && npm run format:web",
+    "format:server": "cd server && npm run format",
+    "format:web": "cd web && npm run format",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "hotel",
+    "chat",
+    "ai",
+    "real-time",
+    "nestjs",
+    "react"
+  ],
+  "author": "AI 当前",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
+  }
+}

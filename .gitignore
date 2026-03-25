@@ -1,0 +1,96 @@
+# 依赖目录
+node_modules/
+dist/
+build/
+
+# 环境变量
+.env
+.env.local
+.env.development
+.env.production
+
+# 日志文件
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 运行时数据
+data/
+*.pid
+*.seed
+*.pid.lock
+
+# 覆盖率
+coverage/
+.nyc_output
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 操作系统
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# 测试
+*.sqlite
+*.db
+
+# Docker
+.dockerignore
+!docker/.dockerignore
+
+# 临时文件
+tmp/
+temp/
+
+# 密钥
+*.pem
+*.key
+*.crt
+
+# 备份
+*.bak
+*.backup
+
+# 数据库
+*.sql
+dump.sql
+
+# 构建产物
+*.dll
+*.exe
+*.so
+*.dylib
+
+# 文档生成
+docs/_build/
+docs/site/
+
+# 前端
+web/.env
+web/build/
+web/.cache/
+
+# 后端
+server/.env
+server/dist/
+server/.cache/
+
+# 包管理器
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+shrinkwrap.yaml
+
+# TypeScript
+*.tsbuildinfo
