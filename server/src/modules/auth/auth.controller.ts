@@ -21,10 +21,24 @@ class DevLoginDto {
   phone: string;
 }
 
+class VerifyCheckinDto {
+  @IsString()
+  roomNumber: string;
+
+  @IsString()
+  phoneLast4: string;
+}
+
 @ApiTags('认证')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Post('verify-checkin')
+  @ApiOperation({ summary: '入住验证登录（房间号 + 手机后4位）' })
+  async verifyCheckin(@Body() body: VerifyCheckinDto) {
+    return this.authService.verifyCheckin(body.roomNumber, body.phoneLast4);
+  }
 
   @Post('dev-login')
   @ApiOperation({ summary: '开发登录（用手机号标识用户）' })

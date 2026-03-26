@@ -24,6 +24,7 @@ import { PaymentModule } from './modules/payment/payment.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AiModule } from './modules/ai/ai.module';
 import { SocketModule } from './modules/socket/socket.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 // 通用模块
 import { CommonModule } from './common/common.module';
@@ -86,6 +87,7 @@ import { CommonModule } from './common/common.module';
     PaymentModule,
     AiModule,
     SocketModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

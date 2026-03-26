@@ -55,6 +55,45 @@ export class AuthService {
   }
 
   /**
+   * 入住验证登录：房间号 + 手机号后4位
+   */
+  async verifyCheckin(roomNumber: string, phoneLast4: string): Promise<any> {
+    // Find a user with matching room and phone last 4 digits
+    const hotel = await this.hotelRepository.findOne({ where: { status: 1 } });
+    if (!hotel) throw new UnauthorizedException('酒店不存在');
+
+    const room = await this.roomRepository.findOne({
+      where: { hotelId: hotel.id, roomNumber },
+    });
+    if (!room) throw new UnauthorizedException('房间号不存在');
+
+    const user = await this.userRepository.findOne({
+      where: { roomId: room.id, status: 1, role: 1 },
+    });
+    if (!user) throw new UnauthorizedException('该房间暂无入住信息，请联系前台');
+
+    const phone = user.phone || '';
+    if (!phone.endsWith(phoneLast4)) {
+      throw new UnauthorizedException('手机号后4位不正确');
+    }
+
+    await this.userRepository.update(user.id, { lastLoginAt: new Date() });
+    const token = this.generateToken(user);
+    return {
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        phone: user.phone,
+        avatar: user.avatar,
+        role: user.role,
+        roomId: user.roomId,
+        hotelId: user.hotelId,
+      },
+    };
+  }
+
+  /**
    * 开发/演示登录（用 phone 作为 openid 标识符）
    */
   async devLogin(name: string, phone: string): Promise<any> {

@@ -64,7 +64,10 @@
       "Bash(sed -n '1,17p' /d/lvguanjia/web/src/pages/Orders.tsx)",
       "Bash(sed -n '1,17p' /d/lvguanjia/web/src/pages/Profile.tsx)",
       "Bash(sed -n '1,15p' /d/lvguanjia/web/src/layouts/MainLayout.tsx)",
-      "Bash(node -e \"const icons = require\\(''d:/lvguanjia/web/node_modules/antd-mobile-icons''\\); const used = [''CheckCircleOutline'',''ClockCircleOutline'',''CloseCircleOutline'',''TruckOutline'',''UserOutline'',''PhonebookOutline'',''EnvironmentOutline'',''ExclamationCircleOutline'',''MessageOutline'',''ShopbagOutline'',''UnorderedListOutline'',''AppOutline'',''ChatAddOutline'']; used.forEach\\(n => console.log\\(n, icons[n] ? ''OK'' : ''MISSING''\\)\\);\")"
+      "Bash(node -e \"const icons = require\\(''d:/lvguanjia/web/node_modules/antd-mobile-icons''\\); const used = [''CheckCircleOutline'',''ClockCircleOutline'',''CloseCircleOutline'',''TruckOutline'',''UserOutline'',''PhonebookOutline'',''EnvironmentOutline'',''ExclamationCircleOutline'',''MessageOutline'',''ShopbagOutline'',''UnorderedListOutline'',''AppOutline'',''ChatAddOutline'']; used.forEach\\(n => console.log\\(n, icons[n] ? ''OK'' : ''MISSING''\\)\\);\")",
+      "Bash(npm create:*)",
+      "Bash(node dist/main.js)",
+      "Bash(cmd //c \"taskkill /PID 20048 /F\")"
     ]
   }
 }

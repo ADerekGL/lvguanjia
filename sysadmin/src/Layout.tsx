@@ -1,0 +1,63 @@
+import { Layout, Menu } from 'antd';
+import {
+  DashboardOutlined,
+  BankOutlined,
+  TeamOutlined,
+  HomeOutlined,
+  ShoppingOutlined,
+  ToolOutlined,
+  IdcardOutlined,
+} from '@ant-design/icons';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+
+const { Sider, Content, Header } = Layout;
+
+const menuItems = [
+  { key: '/', icon: <DashboardOutlined />, label: '系统概览' },
+  { key: '/hotels', icon: <BankOutlined />, label: '酒店管理' },
+  { key: '/users', icon: <TeamOutlined />, label: '用户管理' },
+  { key: '/rooms', icon: <HomeOutlined />, label: '房间管理' },
+  { key: '/orders', icon: <ShoppingOutlined />, label: '订单管理' },
+  { key: '/services', icon: <ToolOutlined />, label: '服务请求' },
+  { key: '/checkin', icon: <IdcardOutlined />, label: '入住管理' },
+];
+
+export default function AppLayout() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  return (
+    <Layout style={{ minHeight: '100vh' }}>
+      <Sider theme="dark" width={210}>
+        <div style={{
+          height: 64, display: 'flex', alignItems: 'center',
+          justifyContent: 'center', color: '#fff', fontWeight: 'bold',
+          fontSize: 15, borderBottom: '1px solid #333', padding: '0 12px',
+          textAlign: 'center', lineHeight: '1.3',
+        }}>
+          智慧酒店<br />系统管理平台
+        </div>
+        <Menu
+          theme="dark"
+          mode="inline"
+          selectedKeys={[location.pathname]}
+          items={menuItems}
+          onClick={({ key }) => navigate(key)}
+          style={{ marginTop: 8 }}
+        />
+      </Sider>
+      <Layout>
+        <Header style={{
+          background: '#fff', padding: '0 24px', fontWeight: 'bold',
+          fontSize: 16, borderBottom: '1px solid #f0f0f0',
+          display: 'flex', alignItems: 'center',
+        }}>
+          系统管理控制台
+        </Header>
+        <Content style={{ margin: 24, background: '#f5f5f5', minHeight: 280 }}>
+          <Outlet />
+        </Content>
+      </Layout>
+    </Layout>
+  );
+}
