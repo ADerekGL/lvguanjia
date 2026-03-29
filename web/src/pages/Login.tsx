@@ -1,17 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Form, Input, Toast, NavBar } from 'antd-mobile';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
-import axios from 'axios';
-
-const api = axios.create({ baseURL: 'http://localhost:3000/api' });
+import api from '../services/api';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { setAuth } = useAuthStore();
+  const [searchParams] = useSearchParams();
+  const { setAuth, setHotelId, hotelId: storedHotelId } = useAuthStore();
   const [roomNumber, setRoomNumber] = useState('');
   const [phoneLast4, setPhoneLast4] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isWechat, setIsWechat] = useState(false);
+
+  useEffect(() => {
+    setIsWechat(/MicroMessenger/i.test(navigator.userAgent));
+    const id = searchParams.get('hotelId');
+    if (id) setHotelId(Number(id));
+  }, []);
+
+  const handleWechatOAuth = () => {
+    const base = (window as any).__API_BASE__ || '';
+    const hid = searchParams.get('hotelId') || storedHotelId;
+    const qs = hid ? `?hotelId=${hid}` : '';
+    window.location.href = `${base}/api/auth/wechat-oauth${qs}`;
+  };
 
   const handleLogin = async () => {
     if (!roomNumber.trim()) {
@@ -24,11 +37,11 @@ const Login: React.FC = () => {
     }
     setLoading(true);
     try {
-      const res: any = await api.post('/auth/verify-checkin', {
-        roomNumber: roomNumber.trim(),
-        phoneLast4: phoneLast4.trim(),
-      });
-      const { user, token } = res.data;
+      const body: any = { roomNumber: roomNumber.trim(), phoneLast4: phoneLast4.trim() };
+      const hid = searchParams.get('hotelId') ? Number(searchParams.get('hotelId')) : storedHotelId;
+      if (hid) body.hotelId = hid;
+      const res: any = await api.post('/auth/verify-checkin', body);
+      const { user, token } = res;
       setAuth(user, token);
       navigate('/', { replace: true });
     } catch (e: any) {
@@ -79,6 +92,20 @@ const Login: React.FC = () => {
         >
           验证入住
         </Button>
+
+        {isWechat && (
+          <>
+            <div style={{ textAlign: 'center', fontSize: '12px', color: '#ccc', margin: '16px 0 8px' }}>— 或 —</div>
+            <Button
+              block
+              size="large"
+              style={{ borderRadius: '8px', background: '#07c160', color: '#fff', border: 'none' }}
+              onClick={handleWechatOAuth}
+            >
+              微信一键登录
+            </Button>
+          </>
+        )}
 
         <div style={{ textAlign: 'center', fontSize: '12px', color: '#bbb', marginTop: '24px' }}>
           如无法登录，请联系前台工作人员

@@ -25,6 +25,9 @@ import { AuthModule } from './modules/auth/auth.module';
 import { AiModule } from './modules/ai/ai.module';
 import { SocketModule } from './modules/socket/socket.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { HotelAdminModule } from './modules/hotel-admin/hotel-admin.module';
+import { UploadModule } from './modules/upload/upload.module';
+import { SubscriptionModule } from './modules/subscription/subscription.module';
 
 // 通用模块
 import { CommonModule } from './common/common.module';
@@ -88,6 +91,9 @@ import { CommonModule } from './common/common.module';
     AiModule,
     SocketModule,
     AdminModule,
+    HotelAdminModule,
+    UploadModule,
+    SubscriptionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

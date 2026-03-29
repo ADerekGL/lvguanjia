@@ -7,6 +7,7 @@ import Orders from './pages/Orders';
 import Service from './pages/Service';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
+import WechatCallback from './pages/WechatCallback';
 import { useAuthStore } from './store/auth';
 import './App.css';
 
@@ -21,6 +22,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/auth-callback" element={<WechatCallback />} />
         <Route
           path="/"
           element={

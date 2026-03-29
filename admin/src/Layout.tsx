@@ -1,4 +1,4 @@
-import { Layout, Menu } from 'antd';
+import { Layout, Menu, Button } from 'antd';
 import {
   DashboardOutlined,
   HomeOutlined,
@@ -6,23 +6,45 @@ import {
   ShoppingOutlined,
   ToolOutlined,
   AppstoreOutlined,
+  LogoutOutlined,
+  SolutionOutlined,
+  CrownOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { usePlan } from './store/planContext';
+import { canAccess } from './utils/planAccess';
+import { menuItems as menuConfig } from './config/menuConfig';
 
 const { Sider, Content, Header } = Layout;
 
-const menuItems = [
-  { key: '/', icon: <DashboardOutlined />, label: '仪表盘' },
-  { key: '/rooms', icon: <HomeOutlined />, label: '房间管理' },
-  { key: '/users', icon: <TeamOutlined />, label: '客人管理' },
-  { key: '/orders', icon: <ShoppingOutlined />, label: '订单管理' },
-  { key: '/services', icon: <ToolOutlined />, label: '服务请求' },
-  { key: '/products', icon: <AppstoreOutlined />, label: '商品管理' },
-];
+const iconMap: Record<string, React.ReactNode> = {
+  DashboardOutlined: <DashboardOutlined />,
+  HomeOutlined: <HomeOutlined />,
+  TeamOutlined: <TeamOutlined />,
+  ShoppingOutlined: <ShoppingOutlined />,
+  ToolOutlined: <ToolOutlined />,
+  AppstoreOutlined: <AppstoreOutlined />,
+  SolutionOutlined: <SolutionOutlined />,
+  CrownOutlined: <CrownOutlined />,
+};
 
 export default function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { effectivePlan } = usePlan();
+
+  const visibleItems = menuConfig
+    .filter(item => canAccess(item.requiredPlan, effectivePlan as any))
+    .map(item => ({
+      key: item.key,
+      icon: iconMap[item.icon],
+      label: item.label,
+    }));
+
+  const handleLogout = () => {
+    localStorage.removeItem('hotel_admin_token');
+    navigate('/login');
+  };
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -34,14 +56,15 @@ export default function AppLayout() {
           theme="dark"
           mode="inline"
           selectedKeys={[location.pathname]}
-          items={menuItems}
+          items={visibleItems}
           onClick={({ key }) => navigate(key)}
           style={{ marginTop: 8 }}
         />
       </Sider>
       <Layout>
-        <Header style={{ background: '#fff', padding: '0 24px', fontWeight: 'bold', fontSize: 16, borderBottom: '1px solid #f0f0f0' }}>
-          酒店管理系统
+        <Header style={{ background: '#fff', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f0f0f0' }}>
+          <span style={{ fontWeight: 'bold', fontSize: 16 }}>酒店管理系统</span>
+          <Button icon={<LogoutOutlined />} onClick={handleLogout}>退出登录</Button>
         </Header>
         <Content style={{ margin: 24, background: '#f5f5f5', minHeight: 280 }}>
           <Outlet />

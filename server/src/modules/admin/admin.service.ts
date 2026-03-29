@@ -1,7 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull, Not } from 'typeorm';
-import { Hotel, User, Room, Order, ServiceRequest } from '@/entities';
+import { Repository, IsNull, Not, DataSource, LessThan } from 'typeorm';
+import * as QRCode from 'qrcode';
+import { Cron } from '@nestjs/schedule';
+import { Hotel, User, Room, Order, ServiceRequest, Product, ServiceType } from '@/entities';
+import { Subscription } from '@/entities';
+import { ProductService } from '../product/product.service';
+import { SetPrivilegeDto } from './dto/set-privilege.dto';
 
 @Injectable()
 export class AdminService {
@@ -11,6 +16,11 @@ export class AdminService {
     @InjectRepository(Room) private roomRepo: Repository<Room>,
     @InjectRepository(Order) private orderRepo: Repository<Order>,
     @InjectRepository(ServiceRequest) private serviceRepo: Repository<ServiceRequest>,
+    @InjectRepository(Product) private productRepo: Repository<Product>,
+    @InjectRepository(ServiceType) private serviceTypeRepo: Repository<ServiceType>,
+    @InjectRepository(Subscription) private subscriptionRepo: Repository<Subscription>,
+    private productService: ProductService,
+    private dataSource: DataSource,
   ) {}
 
   async getStats() {
@@ -55,9 +65,67 @@ export class AdminService {
     return this.hotelRepo.save(hotel);
   }
 
+  async initHotel(id: number, floors: number, roomsPerFloor: number): Promise<{ rooms: number; serviceTypes: number }> {
+    const hotel = await this.hotelRepo.findOne({ where: { id } });
+    if (!hotel) throw new Error('酒店不存在');
+
+    const defaultServiceTypes = [
+      { name: '客房清洁', icon: 'clean' },
+      { name: '送餐服务', icon: 'food' },
+      { name: '维修报修', icon: 'repair' },
+      { name: '叫醒服务', icon: 'alarm' },
+      { name: '行李寄存', icon: 'luggage' },
+      { name: '洗衣服务', icon: 'laundry' },
+    ];
+    const roomTypes = [1, 2, 3]; // 标准间/大床房/套房，按楼层循环
+
+    return this.dataSource.transaction(async (manager) => {
+      // 只创建该酒店尚未存在的服务类型
+      const existingTypes = await manager.find(ServiceType, { where: { hotelId: id } });
+      const existingNames = new Set(existingTypes.map((t) => t.name));
+      const typesToCreate = defaultServiceTypes
+        .filter((t) => !existingNames.has(t.name))
+        .map((t) => manager.create(ServiceType, { hotelId: id, name: t.name, icon: t.icon, status: 1 }));
+      if (typesToCreate.length) await manager.save(ServiceType, typesToCreate);
+
+      // 只创建尚未存在的房间
+      const existingRooms = await manager.find(Room, { where: { hotelId: id } });
+      const existingNumbers = new Set(existingRooms.map((r) => r.roomNumber));
+      const roomsToCreate: Room[] = [];
+      for (let floor = 1; floor <= floors; floor++) {
+        for (let num = 1; num <= roomsPerFloor; num++) {
+          const roomNumber = `${floor}${String(num).padStart(2, '0')}`;
+          if (!existingNumbers.has(roomNumber)) {
+            roomsToCreate.push(
+              manager.create(Room, {
+                hotelId: id,
+                floor,
+                roomNumber,
+                type: roomTypes[(num - 1) % 3],
+                status: 1,
+                price: 299 + ((num - 1) % 3) * 100,
+              }),
+            );
+          }
+        }
+      }
+      if (roomsToCreate.length) await manager.save(Room, roomsToCreate);
+
+      return { rooms: roomsToCreate.length, serviceTypes: typesToCreate.length };
+    });
+  }
+
   async updateHotel(id: number, data: Partial<Hotel>) {
     await this.hotelRepo.update(id, data);
     return this.hotelRepo.findOne({ where: { id } });
+  }
+
+  async generateHotelQrCode(id: number, baseUrl: string): Promise<{ dataUrl: string; loginUrl: string }> {
+    const hotel = await this.hotelRepo.findOne({ where: { id } });
+    if (!hotel) throw new Error('酒店不存在');
+    const loginUrl = `${baseUrl}/login?hotelId=${id}`;
+    const dataUrl = await QRCode.toDataURL(loginUrl, { width: 300, margin: 2 });
+    return { dataUrl, loginUrl };
   }
 
   async getUsers(page = 1, limit = 20, hotelId?: number, role?: number) {
@@ -74,9 +142,34 @@ export class AdminService {
     return { users, total };
   }
 
-  async updateUser(id: number, data: { role?: number; status?: number }) {
+  async updateUser(id: number, data: { role?: number; status?: number; name?: string; phone?: string }) {
     await this.userRepo.update(id, data);
     return this.userRepo.findOne({ where: { id } });
+  }
+
+  async approveHotelAdmin(userId: number) {
+    const user = await this.userRepo.findOne({ where: { id: userId, role: 2 } });
+    if (!user) throw new Error('酒店管理员不存在');
+    await this.userRepo.update(userId, { status: 1 });
+    if (user.hotelId) {
+      await this.hotelRepo.update(user.hotelId, { status: 1 });
+    }
+    return { message: '审核通过' };
+  }
+
+  async rejectHotelAdmin(userId: number) {
+    const user = await this.userRepo.findOne({ where: { id: userId, role: 2 } });
+    if (!user) throw new Error('酒店管理员不存在');
+    await this.userRepo.update(userId, { status: 0 });
+    return { message: '已拒绝' };
+  }
+
+  async getPendingHotelAdmins() {
+    return this.userRepo.find({
+      where: { role: 2, status: 0 },
+      relations: ['hotel'],
+      order: { id: 'DESC' },
+    });
   }
 
   async getOrders(page = 1, limit = 20, hotelId?: number, status?: number) {
@@ -173,5 +266,95 @@ export class AdminService {
       relations: ['room', 'hotel'],
       order: { id: 'DESC' },
     });
+  }
+
+  // --- Product management ---
+  async getProducts(hotelId?: number, category?: string) {
+    return this.productService.findAllByHotel(hotelId || 0, category);
+  }
+
+  async createProduct(data: Partial<Product>) {
+    return this.productService.create(data);
+  }
+
+  async updateProduct(id: number, data: Partial<Product>) {
+    return this.productService.update(id, data);
+  }
+
+  async deleteProduct(id: number) {
+    return this.productService.delete(id);
+  }
+
+  // ─── Privilege management ────────────────────────────────────────────
+
+  async getPrivilege(hotelId: number) {
+    const hotel = await this.hotelRepo.findOne({ where: { id: hotelId } });
+    if (!hotel) throw new NotFoundException('酒店不存在');
+    const subscription = await this.subscriptionRepo.findOne({
+      where: { hotelId, status: 'active' },
+      relations: ['plan'],
+      order: { expiresAt: 'DESC' },
+    });
+    return {
+      hotelId: hotel.id,
+      hotelName: hotel.name,
+      effectivePlan: hotel.effectivePlan,
+      planOverride: hotel.planOverride,
+      planOverrideNote: hotel.planOverrideNote,
+      planOverrideBy: hotel.planOverrideBy,
+      planOverrideAt: hotel.planOverrideAt,
+      subscription: subscription
+        ? {
+            id: subscription.id,
+            planName: subscription.plan?.name,
+            billingCycle: subscription.billingCycle,
+            status: subscription.status,
+            startedAt: subscription.startedAt,
+            expiresAt: subscription.expiresAt,
+          }
+        : null,
+    };
+  }
+
+  async setPrivilege(hotelId: number, dto: SetPrivilegeDto, operatorId: number) {
+    const hotel = await this.hotelRepo.findOne({ where: { id: hotelId } });
+    if (!hotel) throw new NotFoundException('酒店不存在');
+    hotel.effectivePlan = dto.planName;
+    hotel.planOverride = true;
+    hotel.planOverrideNote = dto.reason;
+    hotel.planOverrideBy = operatorId;
+    hotel.planOverrideAt = new Date();
+    await this.hotelRepo.save(hotel);
+    return this.getPrivilege(hotelId);
+  }
+
+  async revokePrivilege(hotelId: number) {
+    const hotel = await this.hotelRepo.findOne({ where: { id: hotelId } });
+    if (!hotel) throw new NotFoundException('酒店不存在');
+    hotel.effectivePlan = 'none';
+    hotel.planOverride = false;
+    hotel.planOverrideNote = null;
+    hotel.planOverrideBy = null;
+    hotel.planOverrideAt = null;
+    await this.hotelRepo.save(hotel);
+    return { success: true };
+  }
+
+  @Cron('5 0 * * *')
+  async handleSubscriptionExpiry() {
+    const expired = await this.subscriptionRepo.find({
+      where: { status: 'active', expiresAt: LessThan(new Date()) },
+      relations: ['plan'],
+    });
+    for (const sub of expired) {
+      sub.status = 'expired';
+      await this.subscriptionRepo.save(sub);
+      const hotel = await this.hotelRepo.findOne({ where: { id: sub.hotelId } });
+      if (!hotel) continue;
+      if (!hotel.planOverride) {
+        hotel.effectivePlan = 'none';
+        await this.hotelRepo.save(hotel);
+      }
+    }
   }
 }

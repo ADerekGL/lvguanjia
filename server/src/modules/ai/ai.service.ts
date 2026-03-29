@@ -1,4 +1,4 @@
-import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
 import { InjectRedis } from '@nestjs-modules/ioredis';
@@ -7,21 +7,17 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class AiService {
-  private readonly doubaoConfig: {
-    endpoint: string;
-    apiKey: string;
-    appId: string;
-  };
+  private readonly apiKey: string;
+  private readonly modelId: string;
+  private readonly enabled: boolean;
 
   constructor(
     @InjectRedis() private readonly redis: Redis,
     private readonly configService: ConfigService,
   ) {
-    this.doubaoConfig = {
-      endpoint: this.configService.get('ai.volcanoEndpoint') || 'ark.cn-beijing.volces.com',
-      apiKey: this.configService.get('ai.volcanoAccessKey') || '',
-      appId: this.configService.get('ai.volcanoModel') || '',
-    };
+    this.apiKey = this.configService.get<string>('ai.apiKey') || '';
+    this.modelId = this.configService.get<string>('ai.modelId') || 'doubao-pro-4k';
+    this.enabled = this.configService.get<boolean>('features.aiEnabled') || false;
   }
 
   /**
@@ -201,46 +197,48 @@ export class AiService {
   }
 
   /**
-   * 调用火山引擎豆包API
+   * 调用火山引擎 Ark API（OpenAI 兼容格式）
    */
   private async callDoubaoApi(question: string): Promise<{
     answer: string;
     usage: { tokens: number; cost: number };
   }> {
-    // 模拟API调用，实际项目中需要实现真实调用
-    // 这里返回模拟数据
+    if (!this.enabled || !this.apiKey) {
+      const answer = this.getFallbackAnswer(question);
+      return { answer, usage: { tokens: 0, cost: 0 } };
+    }
 
-    // 实际调用示例（注释）：
-    // const response = await axios.post(this.doubaoConfig.endpoint, {
-    //   app_id: this.doubaoConfig.appId,
-    //   messages: [
-    //     {
-    //       role: 'user',
-    //       content: question,
-    //     },
-    //   ],
-    //   parameters: {
-    //     max_tokens: 1000,
-    //     temperature: 0.7,
-    //   },
-    // }, {
-    //   headers: {
-    //     'Authorization': `Bearer ${this.doubaoConfig.apiKey}`,
-    //     'Content-Type': 'application/json',
-    //   },
-    // });
+    const response = await axios.post(
+      'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
+      {
+        model: this.modelId,
+        messages: [
+          {
+            role: 'system',
+            content: '你是一名专业的酒店管家助手，请用简洁、友好的中文回答客人的问题。',
+          },
+          { role: 'user', content: question },
+        ],
+        max_tokens: 800,
+        temperature: 0.7,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        timeout: 15000,
+      },
+    );
 
-    // 模拟延迟
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    // 简单规则引擎处理常见问题
-    const answer = this.getFallbackAnswer(question);
+    const content: string = response.data?.choices?.[0]?.message?.content || '';
+    const totalTokens: number = response.data?.usage?.total_tokens || 0;
 
     return {
-      answer,
+      answer: content,
       usage: {
-        tokens: Math.floor(Math.random() * 100) + 50,
-        cost: 0.01, // 模拟成本
+        tokens: totalTokens,
+        cost: parseFloat((totalTokens * 0.000015).toFixed(6)),
       },
     };
   }

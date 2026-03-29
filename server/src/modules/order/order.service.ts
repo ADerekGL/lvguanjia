@@ -92,7 +92,15 @@ export class OrderService {
     if (!order) throw new NotFoundException('订单不存在');
     if (order.userId !== userId) throw new BadRequestException('无权操作此订单');
     if (order.status !== 1) throw new BadRequestException('只能取消待支付订单');
-    await this.orderRepository.update(id, { status: 5 });
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.update(Order, id, { status: 5 });
+      const items = await this.orderItemRepository.find({ where: { orderId: id } });
+      for (const item of items) {
+        await manager.increment(Product, { id: item.productId }, 'stock', item.quantity);
+      }
+    });
+
     return this.findById(id) as Promise<Order>;
   }
 }

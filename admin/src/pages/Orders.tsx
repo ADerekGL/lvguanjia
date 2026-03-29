@@ -13,7 +13,8 @@ export default function Orders() {
   const load = () => {
     setLoading(true);
     orderApi.list(1, 100).then((res: any) => {
-      setOrders(res.data?.orders || res?.orders || []);
+      const d = res.data;
+      setOrders(Array.isArray(d) ? d[0] : (d?.orders || d || []));
     }).finally(() => setLoading(false));
   };
 

@@ -11,6 +11,8 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { PlanGuard } from '@/common/guards/plan.guard';
+import { RequireFeature } from '@/common/decorators/require-feature.decorator';
 import { AiService } from './ai.service';
 import { AskQuestionDto, GetRecommendationsDto } from './dto/ai.dto';
 
@@ -21,8 +23,10 @@ export class AiController {
   constructor(private readonly aiService: AiService) {}
 
   @Post('ask')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PlanGuard)
+  @RequireFeature('ai')
   @ApiOperation({ summary: '智能问答' })
+  @ApiResponse({ status: 403, description: 'Pro plan required' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: '问答成功',
@@ -59,8 +63,10 @@ export class AiController {
   }
 
   @Post('recommendations')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PlanGuard)
+  @RequireFeature('ai')
   @ApiOperation({ summary: '智能推荐' })
+  @ApiResponse({ status: 403, description: 'Pro plan required' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: '推荐成功',
@@ -176,7 +182,10 @@ export class AiController {
   }
 
   @Get('faq')
+  @UseGuards(JwtAuthGuard, PlanGuard)
+  @RequireFeature('ai')
   @ApiOperation({ summary: '获取常见问题列表' })
+  @ApiResponse({ status: 403, description: 'Pro plan required' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: '获取成功',

@@ -8,6 +8,7 @@ import {
   Button,
   Tabs,
   Toast,
+  Modal,
 } from 'antd-mobile';
 import {
   CheckCircleOutline,
@@ -97,13 +98,30 @@ const Orders: React.FC = () => {
       ? orders
       : orders.filter((o) => String(o.status) === activeTab);
 
+  const [receipt, setReceipt] = useState<any>(null);
+
   const handlePay = async (order: Order) => {
     try {
-      await paymentApi.pay(order.id, 1);
-      Toast.show({ content: '支付成功', icon: 'success' });
-      fetchOrders();
+      const res: any = await paymentApi.pay(order.id, 2); // 2=支付宝
+      if (res.payUrl && !res.payUrl.includes('pay.example.com')) {
+        // Real Alipay: redirect to payment page
+        window.location.href = res.payUrl;
+      } else {
+        // Mock / already paid
+        Toast.show({ content: '支付成功', icon: 'success' });
+        fetchOrders();
+      }
     } catch (e: any) {
       Toast.show({ content: e.message || '支付失败', icon: 'fail' });
+    }
+  };
+
+  const handleReceipt = async (order: Order) => {
+    try {
+      const res: any = await paymentApi.receipt(order.id);
+      setReceipt(res);
+    } catch (e: any) {
+      Toast.show({ content: e.message || '获取收据失败', icon: 'fail' });
     }
   };
 
@@ -184,6 +202,9 @@ const Orders: React.FC = () => {
                           <Button size="mini" color="primary" onClick={() => handlePay(order)}>去支付</Button>
                         </>
                       )}
+                      {order.status >= 2 && order.status !== 5 && (
+                        <Button size="mini" fill="outline" onClick={() => handleReceipt(order)}>收据</Button>
+                      )}
                     </Space>
                   </div>
                   {order.remark && (
@@ -212,6 +233,33 @@ const Orders: React.FC = () => {
           </div>
         </Space>
       </div>
+
+      <Modal
+        visible={!!receipt}
+        onClose={() => setReceipt(null)}
+        title="订单收据"
+        content={
+          receipt && (
+            <div style={{ fontSize: '13px', lineHeight: '2' }}>
+              <div>订单号：{receipt.orderNo}</div>
+              <div>酒店：{receipt.hotelName}</div>
+              <div>房间：{receipt.roomNumber}</div>
+              <div style={{ marginTop: 8 }}>
+                {(receipt.items || []).map((it: any, i: number) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>{it.productName} x{it.quantity}</span>
+                    <span>¥{Number(it.subtotal).toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ borderTop: '1px solid #eee', marginTop: 8, paddingTop: 8, fontWeight: 'bold', display: 'flex', justifyContent: 'space-between' }}>
+                <span>合计</span><span>¥{Number(receipt.totalAmount).toFixed(2)}</span>
+              </div>
+              <div style={{ color: '#999', marginTop: 4 }}>支付时间：{receipt.paidAt}</div>
+            </div>
+          )
+        }
+      />
     </div>
   );
 };

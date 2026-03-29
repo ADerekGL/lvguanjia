@@ -45,10 +45,9 @@ export default () => ({
 
   // AI 配置
   ai: {
-    volcanoAccessKey: process.env.VOLCANO_ACCESS_KEY || '',
-    volcanoSecretKey: process.env.VOLCANO_SECRET_KEY || '',
+    apiKey: process.env.ARK_API_KEY || '',
+    modelId: process.env.ARK_MODEL_ID || 'doubao-1-5-pro-32k-250115',
     volcanoEndpoint: process.env.VOLCANO_ENDPOINT || 'ark.cn-beijing.volces.com',
-    volcanoModel: process.env.VOLCANO_MODEL || 'deepseek-ai/DeepSeek-R1-Distill-Qwen-32B',
     dailyLimitPerRoom: parseInt(process.env.AI_DAILY_LIMIT_PER_ROOM || '50', 10) || 50,
     cacheTtl: parseInt(process.env.AI_CACHE_TTL || '86400', 10) || 86400,
   },
@@ -73,12 +72,26 @@ export default () => ({
 
   // 支付配置
   payment: {
+    alipay: {
+      appId: process.env.ALIPAY_APP_ID || '',
+      privateKey: (process.env.ALIPAY_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+      publicKey: (process.env.ALIPAY_PUBLIC_KEY || '').replace(/\\n/g, '\n'),
+      gateway: process.env.ALIPAY_GATEWAY || 'https://openapi.alipay.com/gateway.do',
+      notifyUrl: process.env.ALIPAY_NOTIFY_URL || '',
+      returnUrl: process.env.ALIPAY_RETURN_URL || '',
+    },
     wxpay: {
       mchid: process.env.WXPAY_MCHID || '',
       apiKey: process.env.WXPAY_API_KEY || '',
       certPath: process.env.WXPAY_CERT_PATH || './certs/apiclient_cert.pem',
       keyPath: process.env.WXPAY_KEY_PATH || './certs/apiclient_key.pem',
     },
+  },
+
+  // 管理员配置
+  admin: {
+    username: process.env.ADMIN_USERNAME || 'admin',
+    password: process.env.ADMIN_PASSWORD || 'admin123456',
   },
 
   // 监控配置

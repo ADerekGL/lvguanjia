@@ -58,6 +58,34 @@ const Profile: React.FC = () => {
   const roomInfo = user?.roomId ? `房间 ${user.roomId}` : '未分配房间';
   const hotelInfo = user?.hotelId ? `酒店 #${user.hotelId}` : '';
 
+  const [checkingOut, setCheckingOut] = useState(false);
+
+  const handleSelfCheckout = async () => {
+    const step1 = await Dialog.confirm({
+      title: '申请退房',
+      content: '请确认您已将房卡/房间钥匙归还前台，确认后将完成退房。',
+      confirmText: '已还房卡，确认退房',
+      cancelText: '取消',
+    });
+    if (!step1) return;
+    const step2 = await Dialog.confirm({
+      title: '再次确认',
+      content: '退房后将无法再次使用该房间，确定退房吗？',
+      confirmText: '确定退房',
+      cancelText: '返回',
+    });
+    if (!step2) return;
+    setCheckingOut(true);
+    try {
+      await authApi.selfCheckout();
+      Toast.show({ content: '退房成功，感谢您的入住！', icon: 'success' });
+      clearAuth();
+    } catch (e: any) {
+      Toast.show({ content: e.message || '退房失败', icon: 'fail' });
+    } finally {
+      setCheckingOut(false);
+    }
+  };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <NavBar back={null}>个人中心</NavBar>
@@ -101,6 +129,11 @@ const Profile: React.FC = () => {
               <Button block color="primary" onClick={() => setEditing(true)} style={{ marginBottom: '12px' }}>
                 编辑资料
               </Button>
+              {user?.roomId && (
+                <Button block color="warning" loading={checkingOut} onClick={handleSelfCheckout} style={{ marginBottom: '12px' }}>
+                  申请退房
+                </Button>
+              )}
               <Button block color="danger" fill="outline" onClick={handleLogout}>
                 退出登录
               </Button>

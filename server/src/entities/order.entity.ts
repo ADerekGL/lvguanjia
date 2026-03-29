@@ -46,6 +46,13 @@ export class Order {
   @Column({ name: 'completed_at', type: 'datetime', nullable: true })
   completedAt: Date;
 
+  // Phase 2: OTA sync fields (reserved, no logic)
+  @Column({ type: 'varchar', length: 32, nullable: true })
+  source: string;
+
+  @Column({ name: 'external_order_no', type: 'varchar', length: 64, nullable: true })
+  externalOrderNo: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

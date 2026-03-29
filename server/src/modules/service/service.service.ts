@@ -2,6 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ServiceRequest, ServiceType } from '@/entities';
+import { SocketGateway } from '../socket/socket.gateway';
+
+const STATUS_LABELS: Record<number, string> = {
+  1: '待处理',
+  2: '处理中',
+  3: '已完成',
+  4: '已取消',
+};
 
 @Injectable()
 export class ServiceService {
@@ -10,6 +18,7 @@ export class ServiceService {
     private serviceRequestRepository: Repository<ServiceRequest>,
     @InjectRepository(ServiceType)
     private serviceTypeRepository: Repository<ServiceType>,
+    private socketGateway: SocketGateway,
   ) {}
 
   async findByHotel(hotelId: number): Promise<ServiceRequest[]> {
@@ -49,6 +58,16 @@ export class ServiceService {
     if (handlerId) data.handlerId = handlerId;
     if (status === 3) data.completedAt = new Date();
     await this.serviceRequestRepository.update(id, data);
-    return this.findById(id) as Promise<ServiceRequest>;
+    const updated = await this.findById(id) as ServiceRequest;
+    // Push real-time notification to guest
+    if (updated?.userId) {
+      this.socketGateway.sendNotification(updated.userId, 'service_update', {
+        id: updated.id,
+        status,
+        statusLabel: STATUS_LABELS[status] || String(status),
+        typeId: updated.typeId,
+      });
+    }
+    return updated;
   }
 }

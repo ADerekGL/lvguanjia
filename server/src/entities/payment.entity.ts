@@ -28,8 +28,8 @@ export class Payment {
   @Column({ type: 'tinyint', default: 1 })
   status: number; // 0-失败，1-成功
 
-  @Column({ name: 'paid_at', type: 'datetime' })
-  paidAt: Date;
+  @Column({ name: 'paid_at', type: 'datetime', nullable: true })
+  paidAt: Date | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

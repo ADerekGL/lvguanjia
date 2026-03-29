@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Grid, Card, Button, Space, Tag } from 'antd-mobile';
+import { Grid, Card, Button, Space, Tag, Dialog, Toast } from 'antd-mobile';
 import {
   MessageFill,
   ShopbagOutline,
@@ -11,6 +11,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
 import { serviceApi, roomApi } from '../services/api';
+import { authApi } from '../services/api';
 
 interface ServiceRequest {
   id: string;
@@ -40,9 +41,37 @@ const roomTypeText: Record<number, string> = {
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, clearAuth } = useAuthStore();
   const [recentRequests, setRecentRequests] = useState<ServiceRequest[]>([]);
   const [roomInfo, setRoomInfo] = useState<any>(null);
+  const [checkingOut, setCheckingOut] = useState(false);
+
+  const handleSelfCheckout = async () => {
+    const step1 = await Dialog.confirm({
+      title: '申请退房',
+      content: '请确认您已将房卡/房间钥匙归还前台，确认后将完成退房。',
+      confirmText: '已还房卡，确认退房',
+      cancelText: '取消',
+    });
+    if (!step1) return;
+    const step2 = await Dialog.confirm({
+      title: '再次确认',
+      content: '退房后将无法再次使用该房间，确定退房吗？',
+      confirmText: '确定退房',
+      cancelText: '返回',
+    });
+    if (!step2) return;
+    setCheckingOut(true);
+    try {
+      await authApi.selfCheckout();
+      Toast.show({ content: '退房成功，感谢您的入住！', icon: 'success' });
+      clearAuth();
+    } catch (e: any) {
+      Toast.show({ content: e.message || '退房失败', icon: 'fail' });
+    } finally {
+      setCheckingOut(false);
+    }
+  };
 
   const quickActions = [
     { icon: <MessageFill />, text: '在线客服', color: '#1677ff', path: '/chat' },
@@ -52,6 +81,10 @@ const Home: React.FC = () => {
     { icon: <GiftOutline />, text: '优惠活动', color: '#eb2f96' },
     { icon: <UserOutline />, text: '个人中心', color: '#13c2c2', path: '/profile' },
   ];
+
+  const checkoutAction = user?.roomId
+    ? { text: '申请退房', onClick: handleSelfCheckout }
+    : null;
 
   useEffect(() => {
     if (!user?.roomId) return;
@@ -123,7 +156,7 @@ const Home: React.FC = () => {
                   background: '#f9f9f9',
                   border: 'none',
                 }}
-                onClick={() => action.path && navigate(action.path)}
+                onClick={() => { if ((action as any).path) navigate((action as any).path); }}
               >
                 <div style={{ fontSize: '28px', color: action.color }}>{action.icon}</div>
                 <div style={{ fontSize: '12px', color: '#333' }}>{action.text}</div>
@@ -131,6 +164,17 @@ const Home: React.FC = () => {
             </Grid.Item>
           ))}
         </Grid>
+        {checkoutAction && (
+          <Button
+            block
+            color="danger"
+            loading={checkingOut}
+            onClick={checkoutAction.onClick}
+            style={{ marginTop: '12px', borderRadius: '8px' }}
+          >
+            {checkoutAction.text}
+          </Button>
+        )}
       </Card>
 
       {/* 服务状态 */}

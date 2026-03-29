@@ -1,128 +1,216 @@
-# 智慧酒店管家服务平台
+# 旅管家 / lvguanjia — 智慧酒店管家服务平台
 
-基于 AI 技术的酒店智能管家服务平台，提供实时聊天、在线商城、订单管理、客房服务等功能。
+基于 NestJS + React 的酒店智能管家系统，支持多酒店、实时聊天、在线商城、订单支付、客房服务和 AI 问答。
 
-## 🚀 技术栈
+---
 
-### 后端
-- **框架**: Nest.js 10.x + TypeScript 5.x
-- **数据库**: MySQL 8.0 + TypeORM
-- **缓存**: Redis 7.x
-- **实时通信**: Socket.IO 4.x
-- **认证**: JWT + 微信登录
+## 目录
 
-### 前端
-- **框架**: React 18.x + TypeScript 5.x
-- **UI 组件**: Ant Design Mobile 5.x
-- **状态管理**: Zustand 4.x
-- **路由**: React Router 6.x
+- [项目结构](#项目结构)
+- [本地开发快速启动（Docker Compose）](#本地开发快速启动)
+- [手动启动（不使用 Docker）](#手动启动)
+- [环境变量说明](#环境变量说明)
+- [API 文档](#api-文档)
+- [功能模块](#功能模块)
+- [技术栈](#技术栈)
 
-### 部署
-- **容器化**: Docker + Docker Compose
-- **编排**: Kubernetes (可选)
-- **数据库**: MySQL 主从 + Redis 集群
+---
 
-## 📁 项目结构
+## 项目结构
 
 ```
-├── server/              # 后端 Nest.js 应用
-├── web/                 # 前端 React 应用
-├── docker/              # Docker 配置文件
-├── docs/                # 项目文档
-├── scripts/             # 部署脚本
-└── README.md            # 项目说明
+lvguanjia/
+├── server/          # NestJS 后端 API (port 3000)
+├── web/             # 访客 H5 前端 (port 80)
+├── admin/           # 酒店管理面板 (port 8081)
+├── sysadmin/        # 系统管理面板 (port 8080)
+├── docker/          # Nginx 配置
+├── docker-compose.yml
+└── README.md
 ```
 
-## 🔧 快速开始
+---
 
-### 环境要求
-- Node.js >= 20.x
-- MySQL >= 8.0
-- Redis >= 7.x
-- Docker >= 24.x (可选)
+## 本地开发快速启动
 
-### 开发环境设置
+> **前提条件:** 已安装 [Docker Desktop](https://www.docker.com/products/docker-desktop/) >= 24.x
 
-1. **克隆项目**
-   ```bash
-   git clone <repository-url>
-   cd smart-hotel-platform
-   ```
+### 第一步：复制并填写环境变量
 
-2. **启动后端服务**
-   ```bash
-   cd server
-   npm install
-   npm run start:dev
-   ```
-
-3. **启动前端应用**
-   ```bash
-   cd web
-   npm install
-   npm start
-   ```
-
-4. **使用 Docker Compose (推荐)**
-   ```bash
-   docker-compose up -d
-   ```
-
-## 📊 功能模块
-
-### 核心功能
-1. **用户管理**: 微信登录、用户信息管理
-2. **房间管理**: 房间分配、状态管理
-3. **实时聊天**: WebSocket 实时通信
-4. **在线商城**: 商品浏览、下单支付
-5. **客房服务**: 服务请求、进度跟踪
-6. **订单管理**: 订单创建、支付、状态管理
-
-### AI 能力
-1. **智能问答**: 基于大模型的客服问答
-2. **智能推荐**: 个性化商品推荐
-3. **语义理解**: 用户意图识别
-
-## 🔐 安全特性
-
-- **房间隔离**: 每个房间数据严格隔离
-- **JWT 认证**: 基于 Token 的身份验证
-- **权限控制**: 角色-based 访问控制
-- **输入验证**: 严格的参数验证
-
-## 📈 性能优化
-
-- **消息分区**: 按 room_id 分区存储海量消息
-- **缓存策略**: Redis 缓存热点数据
-- **连接池**: 数据库连接池管理
-- **分表分库**: 大表分表存储
-
-## 📝 开发指南
-
-### 代码规范
-- TypeScript 严格模式
-- ESLint + Prettier 代码格式化
-- Commitlint 提交规范
-- Husky Git 钩子
-
-### 测试策略
-- 单元测试: Jest
-- 集成测试: Supertest
-- E2E 测试: Playwright
-- 性能测试: k6
-
-## 🚢 部署
-
-### Docker 部署
 ```bash
-docker-compose up -d
+cp server/.env.example server/.env
 ```
 
-### Kubernetes 部署
+打开 `server/.env`，至少修改以下字段（其余保持默认即可用于本地开发）：
+
+| 变量 | 说明 |
+|------|------|
+| `JWT_SECRET` | 随机字符串，本地可用任意值，生产必须改 |
+| `JWT_REFRESH_SECRET` | 同上 |
+| `ADMIN_PASSWORD` | 系统管理员密码 |
+
+> 第三方服务（微信、支付宝、AI）默认全部关闭（`FEATURE_*=false`），本地不需要填写。
+
+### 第二步：一键启动所有服务
+
 ```bash
-kubectl apply -f k8s/
+docker compose up -d
 ```
 
-## 📄 许可证
+首次启动会拉取镜像并构建，约需 3–5 分钟。
 
-MIT License
+### 第三步：验证启动
+
+| 服务 | 地址 | 说明 |
+|------|------|------|
+| 访客 H5 | http://localhost | 扫描入住二维码后的访客界面 |
+| 系统管理 | http://localhost:8080 | 系统管理员面板（创建酒店/房间） |
+| 酒店管理 | http://localhost:8081 | 酒店管理员面板（入住/退房/服务） |
+| API 服务 | http://localhost:3000 | NestJS 后端直接访问 |
+| **Swagger UI** | http://localhost:3000/api-docs | 所有接口文档 |
+
+### 第四步：初始化数据（首次）
+
+1. 打开 http://localhost:8080，用 `ADMIN_USERNAME` / `ADMIN_PASSWORD` 登录
+2. 在「酒店管理」页面点击「新建酒店」
+3. 点击「初始化房间」，填写楼层数和每层房间数
+4. 系统自动创建房间和默认服务类型
+
+### 查看日志
+
+```bash
+# 所有服务
+docker compose logs -f
+
+# 仅后端
+docker compose logs -f server
+```
+
+### 停止服务
+
+```bash
+docker compose down
+```
+
+> 数据持久化在 Docker volume（`mysql_data`, `redis_data`），`down` 不会删除数据。
+> 如需清空数据库重新初始化：`docker compose down -v`
+
+### 开启开发模式工具（phpMyAdmin）
+
+```bash
+docker compose --profile dev up -d
+# phpMyAdmin: http://localhost:8082
+```
+
+---
+
+## 手动启动（不使用 Docker）
+
+> 需要本地已安装 Node.js >= 20、MySQL 8.0、Redis 7
+
+```bash
+# 1. 启动后端
+cd server
+cp .env.example .env   # 编辑 .env，填写本地 DB/Redis 连接信息
+npm install
+npm run start:dev      # 热重载开发模式，端口 3000
+
+# 2. 启动访客前端
+cd web
+npm install
+npm run dev            # Vite 开发服务器，端口 5173
+
+# 3. 启动系统管理面板
+cd sysadmin
+npm install
+npm run dev            # 端口 5174
+
+# 4. 启动酒店管理面板
+cd admin
+npm install
+npm run dev            # 端口 5175
+```
+
+---
+
+## 环境变量说明
+
+完整注释见 [`server/.env.example`](server/.env.example)。
+
+### 必填（生产环境）
+
+| 变量 | 说明 |
+|------|------|
+| `JWT_SECRET` | JWT 签名密钥，生产必须为随机长字符串 |
+| `JWT_REFRESH_SECRET` | 刷新令牌密钥 |
+| `ADMIN_PASSWORD` | 系统管理员密码 |
+| `DB_PASSWORD` | MySQL 用户密码 |
+| `DB_ROOT_PASSWORD` | MySQL root 密码 |
+| `REDIS_PASSWORD` | Redis 密码 |
+
+### 可选（启用对应功能时填写）
+
+| 变量 | 功能 | 开关 |
+|------|------|------|
+| `WECHAT_APP_ID` / `WECHAT_APP_SECRET` | 微信登录 | `FEATURE_WECHAT_LOGIN=true` |
+| `ALIPAY_APP_ID` 等 | 支付宝支付 | `FEATURE_PAYMENT_ENABLED=true` |
+| `WECHAT_PAY_MCH_ID` 等 | 微信支付 | `FEATURE_PAYMENT_ENABLED=true` |
+| `ARK_API_KEY` | AI 问答（豆包） | `FEATURE_AI_ENABLED=true` |
+
+---
+
+## API 文档
+
+启动后访问 Swagger UI：**http://localhost:3000/api**
+
+### 认证方式
+
+所有需要认证的接口均使用 Bearer Token：
+
+```
+Authorization: Bearer <token>
+```
+
+### 获取 Token
+
+| 角色 | 接口 |
+|------|------|
+| 访客（扫码入住） | `POST /auth/verify-checkin` |
+| 酒店管理员 | `POST /auth/hotel-admin-login` |
+| 系统管理员 | `POST /auth/admin-login` |
+| 开发测试 | `POST /auth/dev-login` |
+
+### 接口前缀说明
+
+| 前缀 | 角色 | Guard |
+|------|------|-------|
+| `/auth/*` | 公开 / 所有角色 | ThrottlerGuard / JwtAuthGuard |
+| `/sysadmin/*` | 系统管理员（role=3） | AdminAuthGuard |
+| `/hotel-admin/*` | 酒店管理员（role=2） | HotelAdminAuthGuard |
+| `/orders`, `/products`, `/services`, `/rooms` 等 | 已登录用户 | JwtAuthGuard |
+
+---
+
+## 功能模块
+
+| 模块 | 状态 | 说明 |
+|------|------|------|
+| 用户认证 | 完成 | JWT + 入住验证 + 微信（需配置） |
+| 多酒店管理 | 完成 | 系统管理员创建酒店，酒店管理员独立管理 |
+| 房间管理 | 完成 | 入住/退房/状态流转 |
+| 订单 | 完成 | 创建/支付/取消（含库存回滚） |
+| 支付 | 部分 | 支付宝 H5（需密钥）；微信支付 stub |
+| 客房服务 | 完成 | 提交/处理/Socket 实时通知 |
+| 消息/聊天 | 完成 | WebSocket 双向通信 |
+| 商品管理 | 完成 | CRUD + 图片上传 |
+| AI 问答 | 部分 | 豆包 API（需 ARK_API_KEY） |
+| OTA 同步 | 未开始 | Phase 2，Order 实体已预留字段 |
+
+---
+
+## 技术栈
+
+- **后端**: NestJS 10 · TypeORM · MySQL 8 · Redis 7 · Socket.IO 4 · JWT
+- **前端**: React 18 · Vite · TypeScript · Ant Design / Ant Design Mobile · Zustand
+- **部署**: Docker Compose · Nginx
+- **文档**: Swagger / OpenAPI 3

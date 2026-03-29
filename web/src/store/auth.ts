@@ -13,8 +13,10 @@ interface User {
 interface AuthState {
   user: User | null;
   token: string | null;
-  setAuth: (user: User, token: string) => void;
+  hotelId: number | null;
+  setAuth: (user: User | null, token: string) => void;
   clearAuth: () => void;
+  setHotelId: (id: number) => void;
 }
 
 function loadUser(): User | null {
@@ -26,17 +28,27 @@ function loadUser(): User | null {
   }
 }
 
+function loadHotelId(): number | null {
+  const raw = localStorage.getItem('hotelId');
+  return raw ? Number(raw) : null;
+}
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: loadUser(),
   token: localStorage.getItem('token'),
-  setAuth: (user, token) => {
+  hotelId: loadHotelId(),
+  setAuth: (user: User | null, token: string) => {
     localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
+    if (user) localStorage.setItem('user', JSON.stringify(user));
     set({ user, token });
   },
   clearAuth: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     set({ user: null, token: null });
+  },
+  setHotelId: (id: number) => {
+    localStorage.setItem('hotelId', String(id));
+    set({ hotelId: id });
   },
 }));

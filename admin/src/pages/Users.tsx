@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Table, Button, Select, Space, message, Tag } from 'antd';
+import { Table, Select, Space, message, Tag } from 'antd';
 import { userApi, roomApi } from '../api';
 import dayjs from 'dayjs';
 
@@ -11,8 +11,10 @@ export default function Users() {
   const load = () => {
     setLoading(true);
     Promise.all([userApi.list(), roomApi.list()]).then(([u, r]: any[]) => {
-      setUsers(u.data?.users || u?.users || u.data || u || []);
-      setRooms(r.data || r || []);
+      const uData = u.data;
+      const raw: any[] = Array.isArray(uData) ? uData[0] : (uData?.items || uData?.users || []);
+      setUsers(raw.filter((u: any) => u.status !== 0));
+      setRooms(r.data || []);
     }).finally(() => setLoading(false));
   };
 
@@ -20,7 +22,7 @@ export default function Users() {
 
   const handleAssign = async (userId: number, roomId: number) => {
     try {
-      await userApi.assignRoom(userId, roomId);
+      await userApi.update(userId, { roomId });
       message.success('房间分配成功');
       load();
     } catch (e: any) {

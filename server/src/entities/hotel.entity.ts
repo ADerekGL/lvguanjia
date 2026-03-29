@@ -38,6 +38,21 @@ export class Hotel {
   @Column({ type: 'tinyint', default: 1 })
   status: number; // 0-停业，1-营业
 
+  @Column({ name: 'effective_plan', type: 'varchar', length: 16, default: 'none' })
+  effectivePlan: string; // 'none' | 'basic' | 'pro' | 'enterprise'
+
+  @Column({ name: 'plan_override', type: 'boolean', default: false })
+  planOverride: boolean;
+
+  @Column({ name: 'plan_override_note', type: 'varchar', length: 255, nullable: true })
+  planOverrideNote: string | null;
+
+  @Column({ name: 'plan_override_by', type: 'int', nullable: true })
+  planOverrideBy: number | null;
+
+  @Column({ name: 'plan_override_at', type: 'timestamp', nullable: true })
+  planOverrideAt: Date | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

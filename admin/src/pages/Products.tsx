@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Table, Tag, Button, Modal, Form, Input, Select, InputNumber, Switch, Space, message, Popconfirm } from 'antd';
+import { Table, Tag, Button, Modal, Form, Input, Select, InputNumber, Space, message, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { productApi } from '../api';
 

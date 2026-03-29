@@ -1,4 +1,4 @@
-import { Layout, Menu } from 'antd';
+import { Layout, Menu, Button } from 'antd';
 import {
   DashboardOutlined,
   BankOutlined,
@@ -7,6 +7,9 @@ import {
   ShoppingOutlined,
   ToolOutlined,
   IdcardOutlined,
+  LogoutOutlined,
+  AppstoreOutlined,
+  CrownOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 
@@ -17,14 +20,21 @@ const menuItems = [
   { key: '/hotels', icon: <BankOutlined />, label: '酒店管理' },
   { key: '/users', icon: <TeamOutlined />, label: '用户管理' },
   { key: '/rooms', icon: <HomeOutlined />, label: '房间管理' },
+  { key: '/products', icon: <AppstoreOutlined />, label: '商品管理' },
   { key: '/orders', icon: <ShoppingOutlined />, label: '订单管理' },
   { key: '/services', icon: <ToolOutlined />, label: '服务请求' },
   { key: '/checkin', icon: <IdcardOutlined />, label: '入住管理' },
+  { key: '/subscriptions', icon: <CrownOutlined />, label: '订阅管理' },
 ];
 
 export default function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token');
+    navigate('/login');
+  };
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -50,9 +60,10 @@ export default function AppLayout() {
         <Header style={{
           background: '#fff', padding: '0 24px', fontWeight: 'bold',
           fontSize: 16, borderBottom: '1px solid #f0f0f0',
-          display: 'flex', alignItems: 'center',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          系统管理控制台
+          <span>系统管理控制台</span>
+          <Button icon={<LogoutOutlined />} type="text" onClick={handleLogout}>退出登录</Button>
         </Header>
         <Content style={{ margin: 24, background: '#f5f5f5', minHeight: 280 }}>
           <Outlet />

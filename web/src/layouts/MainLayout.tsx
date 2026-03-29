@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { TabBar } from 'antd-mobile';
+import { TabBar, Badge } from 'antd-mobile';
 import {
   MessageOutline,
   ShopbagOutline,
@@ -10,19 +10,40 @@ import {
   ChatAddOutline,
 } from 'antd-mobile-icons';
 import { useNavigate, useLocation } from 'react-router-dom';
-
-const tabs = [
-  { key: '/', title: '首页', icon: <AppOutline /> },
-  { key: '/chat', title: '聊天', icon: <MessageOutline /> },
-  { key: '/shop', title: '商城', icon: <ShopbagOutline /> },
-  { key: '/orders', title: '订单', icon: <UnorderedListOutline /> },
-  { key: '/service', title: '服务', icon: <ChatAddOutline /> },
-  { key: '/profile', title: '我的', icon: <UserOutline /> },
-];
+import { connectSocket, onServiceUpdate } from '../services/socket';
+import { useAuthStore } from '../store/auth';
 
 const MainLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { token } = useAuthStore();
+  const [serviceUnread, setServiceUnread] = useState(0);
+
+  useEffect(() => {
+    if (!token) return;
+    const sock = connectSocket(token);
+    const off = onServiceUpdate(() => {
+      if (!location.pathname.startsWith('/service')) {
+        setServiceUnread((n) => n + 1);
+      }
+    });
+    return off;
+  }, [token]);
+
+  const tabs = [
+    { key: '/', title: '首页', icon: <AppOutline /> },
+    { key: '/chat', title: '聊天', icon: <MessageOutline /> },
+    { key: '/shop', title: '商城', icon: <ShopbagOutline /> },
+    { key: '/orders', title: '订单', icon: <UnorderedListOutline /> },
+    {
+      key: '/service',
+      title: '服务',
+      icon: serviceUnread > 0
+        ? <Badge content={serviceUnread}><ChatAddOutline /></Badge>
+        : <ChatAddOutline />,
+    },
+    { key: '/profile', title: '我的', icon: <UserOutline /> },
+  ];
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -31,7 +52,10 @@ const MainLayout: React.FC = () => {
       </div>
       <TabBar
         activeKey={location.pathname}
-        onChange={(key) => navigate(key)}
+        onChange={(key) => {
+          if (key === '/service') setServiceUnread(0);
+          navigate(key);
+        }}
         safeArea
       >
         {tabs.map((item) => (

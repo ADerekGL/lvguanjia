@@ -168,4 +168,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     return { onlineUsers };
   }
+
+  /**
+   * 向指定用户推送通知
+   */
+  sendNotification(userId: number, event: string, payload: object): void {
+    this.server.to(`user:${userId}`).emit(event, payload);
+  }
 }

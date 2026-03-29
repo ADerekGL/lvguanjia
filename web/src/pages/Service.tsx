@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   NavBar,
   Card,
@@ -8,10 +8,12 @@ import {
   Selector,
   Toast,
   Tabs,
+  Badge,
 } from 'antd-mobile';
 import dayjs from 'dayjs';
 import { serviceApi } from '../services/api';
 import { useAuthStore } from '../store/auth';
+import { onServiceUpdate } from '../services/socket';
 
 interface ServiceType {
   id: number;
@@ -49,6 +51,7 @@ const Service: React.FC = () => {
   const [selectedType, setSelectedType] = useState<number[]>([]);
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [unreadUpdates, setUnreadUpdates] = useState(0);
 
   useEffect(() => {
     if (!user?.hotelId) return;
@@ -67,6 +70,19 @@ const Service: React.FC = () => {
   useEffect(() => {
     fetchRequests();
   }, [user?.roomId]);
+
+  // Listen for real-time service status updates
+  useEffect(() => {
+    const off = onServiceUpdate((payload: any) => {
+      // Refresh list and increment badge if not on history tab
+      fetchRequests();
+      if (activeTab !== 'history') {
+        setUnreadUpdates((n) => n + 1);
+        Toast.show({ content: `服务请求已${payload.statusLabel}`, icon: 'success', duration: 3000 });
+      }
+    });
+    return off;
+  }, [activeTab]);
 
   const handleSubmit = async () => {
     if (selectedType.length === 0) {
@@ -114,9 +130,9 @@ const Service: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <NavBar back={null}>客房服务</NavBar>
 
-      <Tabs activeKey={activeTab} onChange={setActiveTab}>
+      <Tabs activeKey={activeTab} onChange={(key) => { setActiveTab(key); if (key === 'history') setUnreadUpdates(0); }}>
         <Tabs.Tab title="发起服务" key="request" />
-        <Tabs.Tab title="服务记录" key="history" />
+        <Tabs.Tab title={unreadUpdates > 0 ? <Badge content={unreadUpdates}>服务记录</Badge> : '服务记录'} key="history" />
       </Tabs>
 
       <div style={{ flex: 1, overflow: 'auto', padding: '12px' }}>

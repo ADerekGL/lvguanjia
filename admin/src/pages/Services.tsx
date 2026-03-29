@@ -13,7 +13,8 @@ export default function Services() {
   const load = () => {
     setLoading(true);
     serviceApi.list().then((res: any) => {
-      setServices(res.data || res || []);
+      const d = res.data;
+      setServices(Array.isArray(d) ? d[0] : (d || []));
     }).finally(() => setLoading(false));
   };
 

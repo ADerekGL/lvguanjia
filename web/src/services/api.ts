@@ -33,6 +33,7 @@ export const authApi = {
     api.post('/auth/refresh-token', { refreshToken }),
   logout: () => api.post('/auth/logout'),
   profile: () => api.get('/auth/profile'),
+  selfCheckout: () => api.post('/auth/self-checkout'),
 };
 
 // --- User ---
@@ -84,6 +85,8 @@ export const serviceApi = {
 export const paymentApi = {
   pay: (orderId: number, channel: number) =>
     api.post('/payment/pay', { orderId, channel }),
+  receipt: (orderId: number) =>
+    api.get(`/payment/receipt/${orderId}`),
 };
 
 // --- AI ---

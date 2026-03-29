@@ -46,6 +46,9 @@ export class User {
   @Column({ type: 'tinyint', default: 1 })
   status: number; // 0-禁用，1-正常
 
+  @Column({ name: 'password_hash', type: 'varchar', length: 255, nullable: true })
+  passwordHash: string;
+
   @Column({ name: 'last_login_at', type: 'datetime', nullable: true })
   lastLoginAt: Date;
 

@@ -8,3 +8,6 @@ export { OrderItem } from './order-item.entity';
 export { ServiceType } from './service-type.entity';
 export { ServiceRequest } from './service-request.entity';
 export { Payment } from './payment.entity';
+export { Plan } from './plan.entity';
+export { Subscription } from './subscription.entity';
+export { SubscriptionOrder } from './subscription-order.entity';
