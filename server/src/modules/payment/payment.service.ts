@@ -45,7 +45,11 @@ export class PaymentService {
       where: { orderId, status: 0 },
     });
     if (existing) {
-      return { payUrl: existing.transactionId, transactionId: existing.transactionId, mock: false };
+      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+      if (existing.createdAt > thirtyMinutesAgo) {
+        return { payUrl: existing.transactionId, transactionId: existing.transactionId, mock: false };
+      }
+      await this.paymentRepository.delete(existing.id);
     }
 
     const paymentEnabled = this.configService.get<boolean>('features.paymentEnabled');

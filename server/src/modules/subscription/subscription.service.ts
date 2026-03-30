@@ -1,15 +1,15 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { AlipaySdk } from 'alipay-sdk';
-import { Plan, Subscription, SubscriptionOrder } from '@/entities';
+import { Plan, Subscription, SubscriptionOrder, Hotel } from '@/entities';
 import { CreatePlanDto, UpdatePlanDto } from './dto/plan.dto';
 import { GrantSubscriptionDto } from './dto/subscription.dto';
 import { UpgradePlanDto } from './dto/upgrade.dto';
 
 @Injectable()
-export class SubscriptionService {
+export class SubscriptionService implements OnModuleInit {
   private alipaySdk: AlipaySdk | null = null;
 
   constructor(
@@ -19,6 +19,8 @@ export class SubscriptionService {
     private subscriptionRepository: Repository<Subscription>,
     @InjectRepository(SubscriptionOrder)
     private orderRepository: Repository<SubscriptionOrder>,
+    @InjectRepository(Hotel)
+    private hotelRepository: Repository<Hotel>,
     private configService: ConfigService,
     private dataSource: DataSource,
   ) {
@@ -35,6 +37,10 @@ export class SubscriptionService {
   }
 
   // ─── Plan management ───────────────────────────────────────────────
+
+  async onModuleInit() {
+    await this.seedPlans();
+  }
 
   async listPlans(): Promise<Plan[]> {
     return this.planRepository.find({ where: { isActive: true }, order: { id: 'ASC' } });
@@ -117,7 +123,8 @@ export class SubscriptionService {
     });
     const saved = await this.subscriptionRepository.save(sub);
 
-    // Record manual order
+    // Keep hotel.effectivePlan in sync
+    await this.hotelRepository.update({ id: hotelId }, { effectivePlan: plan.name });
     await this.orderRepository.save(
       this.orderRepository.create({
         hotelId,
@@ -145,12 +152,25 @@ export class SubscriptionService {
   // ─── Hotel-admin self-service ───────────────────────────────────────
 
   async getMySubscription(hotelId: number) {
-    const sub = await this.subscriptionRepository.findOne({
-      where: { hotelId },
-      relations: ['plan'],
-      order: { createdAt: 'DESC' },
+    const hotel = await this.hotelRepository.findOne({ where: { id: hotelId } });
+    const effectivePlan = hotel?.effectivePlan ?? 'none';
+
+    if (effectivePlan === 'none') {
+      return { status: 'none', plan: null };
+    }
+
+    const plan = await this.planRepository.findOne({
+      where: { name: effectivePlan, isActive: true },
     });
-    return sub ?? { status: 'none', plan: null };
+
+    return {
+      status: 'active',
+      billingCycle: hotel?.planOverride ? 'manual' : 'subscription',
+      startedAt: hotel?.planOverrideAt ?? null,
+      expiresAt: null,
+      autoRenew: false,
+      plan: plan ?? { name: effectivePlan, displayName: effectivePlan },
+    };
   }
 
   async getMyOrders(hotelId: number): Promise<SubscriptionOrder[]> {
@@ -259,6 +279,12 @@ export class SubscriptionService {
         autoRenew: true,
       });
       const savedSub = await manager.save(Subscription, sub);
+
+      // Update hotel.effectivePlan to reflect new subscription
+      await manager.update(Hotel, { id: order.hotelId }, {
+        effectivePlan: order.plan.name,
+        planOverride: false,
+      });
 
       // Link order to subscription
       await manager.update(SubscriptionOrder, order.id, { subscriptionId: savedSub.id });

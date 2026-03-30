@@ -64,8 +64,7 @@ export class AuthService {
       hotel = await this.hotelRepository.findOne({ where: { id: hotelId, status: 1 } }) as Hotel;
       if (!hotel) throw new UnauthorizedException('酒店不存在或已停业');
     } else {
-      hotel = await this.hotelRepository.findOne({ where: { status: 1 } }) as Hotel;
-      if (!hotel) throw new UnauthorizedException('酒店不存在');
+      throw new UnauthorizedException('请通过酒店二维码进入系统');
     }
 
     const room = await this.roomRepository.findOne({

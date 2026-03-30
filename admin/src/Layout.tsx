@@ -8,11 +8,8 @@ import {
   AppstoreOutlined,
   LogoutOutlined,
   SolutionOutlined,
-  CrownOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { usePlan } from './store/planContext';
-import { canAccess } from './utils/planAccess';
 import { menuItems as menuConfig } from './config/menuConfig';
 
 const { Sider, Content, Header } = Layout;
@@ -25,21 +22,17 @@ const iconMap: Record<string, React.ReactNode> = {
   ToolOutlined: <ToolOutlined />,
   AppstoreOutlined: <AppstoreOutlined />,
   SolutionOutlined: <SolutionOutlined />,
-  CrownOutlined: <CrownOutlined />,
 };
 
 export default function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { effectivePlan } = usePlan();
 
-  const visibleItems = menuConfig
-    .filter(item => canAccess(item.requiredPlan, effectivePlan as any))
-    .map(item => ({
-      key: item.key,
-      icon: iconMap[item.icon],
-      label: item.label,
-    }));
+  const visibleItems = menuConfig.map(item => ({
+    key: item.key,
+    icon: iconMap[item.icon],
+    label: item.label,
+  }));
 
   const handleLogout = () => {
     localStorage.removeItem('hotel_admin_token');

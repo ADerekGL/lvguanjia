@@ -1,19 +1,18 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-import type { PlanTier } from '../config/menuConfig';
-import { subscriptionApi } from '../api';
+import api from '../api';
+
+export type PlanTier = 'none' | 'basic' | 'pro' | 'enterprise';
 
 interface PlanContextValue {
   effectivePlan: PlanTier;
   planLoaded: boolean;
   loadPlan: () => Promise<void>;
-  setPlan: (plan: PlanTier) => void;
 }
 
 const PlanContext = createContext<PlanContextValue>({
   effectivePlan: 'none',
   planLoaded: false,
   loadPlan: async () => {},
-  setPlan: () => {},
 });
 
 export function PlanProvider({ children }: { children: ReactNode }) {
@@ -21,16 +20,12 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   const [planLoaded, setPlanLoaded] = useState(false);
 
   const loadPlan = useCallback(async () => {
-    const token = localStorage.getItem('hotel_admin_token');
-    if (!token) {
-      setPlanLoaded(true); // not authenticated — mark as loaded so UI can proceed
-      return;
-    }
     try {
-      const res: any = await subscriptionApi.getCurrent();
-      const data = res.data?.data || res.data || res;
+      const res = await api.get('/hotel-admin/subscription');
+      const data = res.data;
       let plan: PlanTier = 'none';
-      if (data?.status === 'active' && data?.plan?.name) {
+      const validStatuses = ['active', 'trial', 'manual'];
+      if (validStatuses.includes(data?.status) && data?.plan?.name) {
         plan = data.plan.name as PlanTier;
       }
       setEffectivePlan(plan);
@@ -42,7 +37,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <PlanContext.Provider value={{ effectivePlan, planLoaded, loadPlan, setPlan: setEffectivePlan }}>
+    <PlanContext.Provider value={{ effectivePlan, planLoaded, loadPlan }}>
       {children}
     </PlanContext.Provider>
   );

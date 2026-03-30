@@ -59,12 +59,5 @@ export const statsApi = {
   get: () => api.get('/hotel-admin/stats'),
 };
 
-export const subscriptionApi = {
-  getCurrent: () => api.get('/hotel-admin/subscription'),
-  getPlans: () => api.get('/hotel-admin/subscription/plans'),
-  upgrade: (planId: number, billingCycle: 'monthly' | 'annual' = 'monthly', paymentMethod: 'alipay' | 'wechat' = 'alipay') =>
-    api.post('/hotel-admin/subscription/upgrade', { planId, billingCycle, paymentMethod }),
-  getOrders: () => api.get('/hotel-admin/subscription/orders'),
-};
 
 export default api;

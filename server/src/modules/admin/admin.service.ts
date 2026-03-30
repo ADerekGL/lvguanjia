@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull, Not, DataSource, LessThan } from 'typeorm';
+import { Repository, IsNull, Not, DataSource, LessThan, Between } from 'typeorm';
 import * as QRCode from 'qrcode';
 import { Cron } from '@nestjs/schedule';
 import { Hotel, User, Room, Order, ServiceRequest, Product, ServiceType } from '@/entities';
@@ -38,7 +38,9 @@ export class AdminService {
       .getRawOne();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const todayOrders = await this.orderRepo.count({ where: { createdAt: Not(IsNull()) } });
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const todayOrders = await this.orderRepo.count({ where: { createdAt: Between(today, tomorrow) } });
     const recentOrders = await this.orderRepo.find({
       order: { createdAt: 'DESC' },
       take: 20,

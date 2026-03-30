@@ -1,17 +1,27 @@
 import { useState } from 'react';
 import { Form, Input, Button, Card, message, Tabs } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import api from '../api';
+import { usePlan } from '../store/planContext';
 
 export default function Login() {
+  const token = localStorage.getItem('hotel_admin_token');
+  if (token) return <Navigate to="/" replace />;
+
+  return <LoginForm />;
+}
+
+function LoginForm() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { loadPlan } = usePlan();
 
   const onLogin = async (values: { username: string; password: string }) => {
     setLoading(true);
     try {
       const res = await api.post('/auth/hotel-admin-login', values);
       localStorage.setItem('hotel_admin_token', res.data.token);
+      await loadPlan();
       navigate('/');
     } catch {
       message.error('手机号或密码错误');

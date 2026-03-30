@@ -124,7 +124,10 @@
       "Bash(curl -s -X POST http://localhost:3000/api/auth/verify-checkin -H 'Content-Type: application/json' -d '{\"\"roomNumber\"\":\"\"302\"\",\"\"phoneLast4\"\":\"\"2213\"\",\"\"hotelId\"\":3}')",
       "Bash(curl -s -X POST http://localhost/api/auth/verify-checkin -H 'Content-Type: application/json' -d '{\"\"\"\"roomNumber\"\"\"\":\"\"\"\"302\"\"\"\",\"\"\"\"phoneLast4\"\"\"\":\"\"\"\"2213\"\"\"\",\"\"\"\"hotelId\"\"\"\":3}')",
       "Bash(curl -s -X POST http://localhost/api/auth/verify-checkin -H 'Content-Type: application/json' -d '{\"\"roomNumber\"\":\"\"302\"\",\"\"phoneLast4\"\":\"\"2213\"\",\"\"hotelId\"\":3}')",
-      "Bash(curl -s -X POST http://localhost/api/auth/self-checkout -H 'Content-Type: application/json' -H 'Authorization: Bearer test')"
+      "Bash(curl -s -X POST http://localhost/api/auth/self-checkout -H 'Content-Type: application/json' -H 'Authorization: Bearer test')",
+      "Bash(grep -rn --include=*.ts --include=*.tsx -E \"throw new \\(BadRequestException|NotFoundException|ForbiddenException\\)\" d:/lvguanjia/server/src/modules/payment/)",
+      "Read(//c//**)",
+      "Read(//mnt/d/**)"
     ]
   }
 }

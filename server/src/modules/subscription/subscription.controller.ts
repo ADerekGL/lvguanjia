@@ -9,6 +9,9 @@ import {
 import { SubscriptionService } from './subscription.service';
 import { AdminAuthGuard } from '@/common/guards/admin-auth.guard';
 import { HotelAdminAuthGuard } from '@/common/guards/hotel-admin-auth.guard';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Hotel } from '@/entities';
 import { CreatePlanDto, UpdatePlanDto } from './dto/plan.dto';
 import { GrantSubscriptionDto, CancelSubscriptionDto } from './dto/subscription.dto';
 import { UpgradePlanDto } from './dto/upgrade.dto';
@@ -102,13 +105,29 @@ export class SysadminSubscriptionController {
 @UseGuards(HotelAdminAuthGuard)
 @Controller('hotel-admin/subscription')
 export class HotelAdminSubscriptionController {
-  constructor(private readonly subscriptionService: SubscriptionService) {}
+  constructor(
+    private readonly subscriptionService: SubscriptionService,
+    @InjectRepository(Hotel) private readonly hotelRepository: Repository<Hotel>,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: '获取我的当前套餐及到期时间' })
   @ApiResponse({ status: 200, description: '当前订阅信息' })
-  getMySubscription(@Request() req) {
-    return this.subscriptionService.getMySubscription(req.user.hotelId);
+  async getMySubscription(@Request() req) {
+    const hotelId = req.user.hotelId;
+    const hotel = await this.hotelRepository.findOne({ where: { id: hotelId } });
+    const subscription = await this.subscriptionService.getActiveSubscription(hotelId);
+    return {
+      effectivePlan: hotel?.effectivePlan || 'none',
+      planOverride: hotel?.planOverride || false,
+      status: subscription?.status || 'none',
+      plan: subscription ? {
+        name: subscription.plan?.name,
+        displayName: subscription.plan?.displayName,
+        billingCycle: subscription.billingCycle,
+        expiresAt: subscription.expiresAt,
+      } : null,
+    };
   }
 
   @Get('plans')
