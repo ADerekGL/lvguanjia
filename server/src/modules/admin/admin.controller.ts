@@ -214,6 +214,42 @@ export class AdminController {
 
   // ─── Privilege management ────────────────────────────────────────────
 
+  @Get('rooms')
+  @ApiOperation({ summary: '获取房间列表（支持按酒店筛选）' })
+  @ApiQuery({ name: 'hotelId', required: false, description: '按酒店过滤' })
+  @ApiResponse({ status: 200, description: '房间列表' })
+  @ApiResponse({ status: 403, description: '权限不足' })
+  getRooms(@Query('hotelId') hotelId?: string) {
+    return this.adminService.getRooms(hotelId ? parseInt(hotelId) : undefined);
+  }
+
+  @Get('checkins')
+  @ApiOperation({ summary: '获取入住记录（全平台，支持按酒店筛选）' })
+  @ApiQuery({ name: 'hotelId', required: false })
+  @ApiResponse({ status: 200, description: '在住客人列表' })
+  @ApiResponse({ status: 403, description: '权限不足' })
+  getCheckins(@Query('hotelId') hotelId?: string) {
+    return this.adminService.getCheckins(hotelId ? parseInt(hotelId) : undefined);
+  }
+
+  @Post('checkin')
+  @ApiOperation({ summary: '系统管理员代办入住登记' })
+  @ApiBody({ schema: { example: { hotelId: 1, roomNumber: '101', name: '张三', phone: '13800138000' } } })
+  @ApiResponse({ status: 201, description: '入住成功' })
+  @ApiResponse({ status: 403, description: '权限不足' })
+  async checkIn(@Body() body: { hotelId: number; roomNumber: string; name: string; phone: string }) {
+    return this.adminService.checkIn(body);
+  }
+
+  @Delete('checkin/:userId')
+  @ApiOperation({ summary: '系统管理员代办退房' })
+  @ApiParam({ name: 'userId', description: '用户ID' })
+  @ApiResponse({ status: 200, description: '退房成功' })
+  @ApiResponse({ status: 403, description: '权限不足' })
+  async checkOut(@Param('userId', ParseIntPipe) userId: number) {
+    return this.adminService.checkOut(userId);
+  }
+
   @Get('hotels/:hotelId/privilege')
   @ApiOperation({ summary: '查看酒店权益（effectivePlan + 订阅详情 + override信息）' })
   @ApiParam({ name: 'hotelId', description: '酒店ID' })
