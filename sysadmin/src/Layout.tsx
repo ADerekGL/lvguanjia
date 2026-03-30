@@ -38,14 +38,14 @@ export default function AppLayout() {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider theme="dark" width={210}>
+      <Sider theme="dark" width={210} style={{ background: '#1b4332' }}>
         <div style={{
           height: 64, display: 'flex', alignItems: 'center',
-          justifyContent: 'center', color: '#fff', fontWeight: 'bold',
-          fontSize: 15, borderBottom: '1px solid #333', padding: '0 12px',
+          justifyContent: 'center', color: '#a8d5a2', fontWeight: 'bold',
+          fontSize: 15, borderBottom: '1px solid #2d6a4f', padding: '0 12px',
           textAlign: 'center', lineHeight: '1.3',
         }}>
-          智慧酒店<br />系统管理平台
+          旅管家<br /><span style={{ fontSize: 11, fontWeight: 400, opacity: 0.75 }}>系统管理平台</span>
         </div>
         <Menu
           theme="dark"
@@ -62,7 +62,7 @@ export default function AppLayout() {
           fontSize: 16, borderBottom: '1px solid #f0f0f0',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          <span>系统管理控制台</span>
+          <span>旅管家 · 系统管理控制台</span>
           <Button icon={<LogoutOutlined />} type="text" onClick={handleLogout}>退出登录</Button>
         </Header>
         <Content style={{ margin: 24, background: '#f5f5f5', minHeight: 280 }}>

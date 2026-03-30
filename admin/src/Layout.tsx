@@ -41,9 +41,9 @@ export default function AppLayout() {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider theme="dark" width={200}>
-        <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', fontSize: 16, borderBottom: '1px solid #333' }}>
-          智慧酒店管理后台
+      <Sider theme="dark" width={200} style={{ background: '#1b4332' }}>
+        <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a8d5a2', fontWeight: 'bold', fontSize: 16, borderBottom: '1px solid #2d6a4f' }}>
+          旅管家 · 酒店管理
         </div>
         <Menu
           theme="dark"
@@ -56,7 +56,7 @@ export default function AppLayout() {
       </Sider>
       <Layout>
         <Header style={{ background: '#fff', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f0f0f0' }}>
-          <span style={{ fontWeight: 'bold', fontSize: 16 }}>酒店管理系统</span>
+          <span style={{ fontWeight: 'bold', fontSize: 16, color: '#2d6a4f' }}>旅管家 · 酒店管理后台</span>
           <Button icon={<LogoutOutlined />} onClick={handleLogout}>退出登录</Button>
         </Header>
         <Content style={{ margin: 24, background: '#f5f5f5', minHeight: 280 }}>

@@ -58,18 +58,22 @@ function LoginForm() {
     }
   };
 
-  const cardStyle = { width: 420 };
+  const cardStyle = { width: 420, boxShadow: '0 8px 40px rgba(27,67,50,0.25)', borderRadius: 12 };
   const wrapStyle: React.CSSProperties = {
     minHeight: '100vh',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: '#f0f2f5',
+    background: 'linear-gradient(160deg, #1b4332 0%, #40916c 60%, #52b788 100%)',
   };
 
   return (
     <div style={wrapStyle}>
       <Card style={cardStyle}>
+        <div style={{ textAlign: 'center', marginBottom: 16 }}>
+          <div style={{ fontSize: 28, lineHeight: 1, marginBottom: 6 }}>🌿</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: '#2d6a4f', letterSpacing: '0.04em' }}>旅管家 · 酒店管理</div>
+        </div>
         <Tabs
           defaultActiveKey="login"
           items={[
@@ -84,7 +88,7 @@ function LoginForm() {
                   <Form.Item label="密码" name="password" rules={[{ required: true }]}>
                     <Input.Password placeholder="请输入密码" />
                   </Form.Item>
-                  <Button type="primary" htmlType="submit" loading={loading} block>
+                  <Button type="primary" htmlType="submit" loading={loading} block style={{ background: '#2d6a4f', borderColor: '#2d6a4f' }}>
                     登录
                   </Button>
                 </Form>
@@ -124,7 +128,7 @@ function LoginForm() {
                   <Form.Item label="酒店联系电话" name="hotelPhone">
                     <Input placeholder="如：010-12345678" />
                   </Form.Item>
-                  <Button type="primary" htmlType="submit" loading={loading} block>
+                  <Button type="primary" htmlType="submit" loading={loading} block style={{ background: '#2d6a4f', borderColor: '#2d6a4f' }}>
                     提交注册申请
                   </Button>
                   <div style={{ marginTop: 12, color: '#888', fontSize: 12 }}>

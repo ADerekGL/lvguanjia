@@ -53,12 +53,12 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #1677ff, #52c41a)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '24px' }}>
-      <div style={{ background: '#fff', borderRadius: '16px', padding: '32px 24px', width: '100%', maxWidth: '360px', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #1b4332 0%, #40916c 60%, #52b788 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '24px' }}>
+      <div style={{ background: '#fff', borderRadius: '16px', padding: '32px 24px', width: '100%', maxWidth: '360px', boxShadow: '0 8px 40px rgba(27,67,50,0.25)' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>🏨</div>
-          <div style={{ fontSize: '22px', fontWeight: 'bold', color: '#1677ff' }}>智慧酒店管家</div>
-          <div style={{ fontSize: '13px', color: '#999', marginTop: '4px' }}>请使用房间号和手机号验证入住</div>
+          <div style={{ fontSize: '36px', marginBottom: '8px', lineHeight: 1 }}>🌿</div>
+          <div style={{ fontSize: '24px', fontWeight: 700, color: '#2d6a4f', letterSpacing: '0.04em' }}>旅管家</div>
+          <div style={{ fontSize: '13px', color: '#888', marginTop: '6px' }}>请使用房间号和手机号验证入住</div>
         </div>
 
         <Form layout="vertical">
@@ -88,14 +88,14 @@ const Login: React.FC = () => {
           size="large"
           loading={loading}
           onClick={handleLogin}
-          style={{ marginTop: '16px', borderRadius: '8px' }}
+          style={{ marginTop: '16px', borderRadius: '8px', '--adm-color-primary': '#2d6a4f' } as any}
         >
           验证入住
         </Button>
 
         {isWechat && (
           <>
-            <div style={{ textAlign: 'center', fontSize: '12px', color: '#ccc', margin: '16px 0 8px' }}>— 或 —</div>
+            <div style={{ textAlign: 'center', fontSize: '12px', color: '#bbb', margin: '16px 0 8px' }}>— 或 —</div>
             <Button
               block
               size="large"

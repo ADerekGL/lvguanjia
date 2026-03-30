@@ -8,6 +8,11 @@
   --accent-bg: rgba(170, 59, 255, 0.1);
   --accent-border: rgba(170, 59, 255, 0.5);
   --social-bg: rgba(244, 243, 236, 0.5);
+
+  /* Brand override: antd-mobile primary → forest green */
+  --adm-color-primary: #2d6a4f;
+  --adm-color-primary-hover: #40916c;
+  --adm-color-primary-active: #1b4332;
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 

@@ -74,12 +74,12 @@ const Home: React.FC = () => {
   };
 
   const quickActions = [
-    { icon: <MessageFill />, text: '在线客服', color: '#1677ff', path: '/chat' },
-    { icon: <ShopbagOutline />, text: '酒店商城', color: '#52c41a', path: '/shop' },
-    { icon: <UnorderedListOutline />, text: '我的订单', color: '#faad14', path: '/orders' },
-    { icon: <ChatAddOutline />, text: '客房服务', color: '#722ed1', path: '/service' },
-    { icon: <GiftOutline />, text: '优惠活动', color: '#eb2f96' },
-    { icon: <UserOutline />, text: '个人中心', color: '#13c2c2', path: '/profile' },
+    { icon: <MessageFill />, text: '在线客服', color: '#2d6a4f', path: '/chat' },
+    { icon: <ShopbagOutline />, text: '酒店商城', color: '#40916c', path: '/shop' },
+    { icon: <UnorderedListOutline />, text: '我的订单', color: '#52b788', path: '/orders' },
+    { icon: <ChatAddOutline />, text: '客房服务', color: '#2d6a4f', path: '/service' },
+    { icon: <GiftOutline />, text: '优惠活动', color: '#40916c' },
+    { icon: <UserOutline />, text: '个人中心', color: '#52b788', path: '/profile' },
   ];
 
   const checkoutAction = user?.roomId
@@ -115,7 +115,7 @@ const Home: React.FC = () => {
                 width: 40,
                 height: 40,
                 borderRadius: '50%',
-                background: '#1677ff',
+                background: '#2d6a4f',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -127,7 +127,7 @@ const Home: React.FC = () => {
               {displayName.slice(0, 1)}
             </div>
             <div>
-              <div style={{ fontSize: '18px', fontWeight: 'bold' }}>智慧酒店管家</div>
+              <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#2d6a4f' }}>旅管家</div>
               <div style={{ fontSize: '12px', color: '#999' }}>{roomNumber} | {displayName}</div>
             </div>
           </div>
@@ -135,7 +135,7 @@ const Home: React.FC = () => {
         style={{ marginBottom: '16px' }}
       >
         <div style={{ fontSize: '14px', color: '#666', lineHeight: 1.5 }}>
-          欢迎使用智慧酒店管家服务，我们为您提供贴心的一站式服务体验。
+          欢迎使用旅管家服务，我们为您提供贴心的一站式住宿体验。
         </div>
       </Card>
 
@@ -153,7 +153,7 @@ const Home: React.FC = () => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '8px',
-                  background: '#f9f9f9',
+                  background: '#f0f7f4',
                   border: 'none',
                 }}
                 onClick={() => { if ((action as any).path) navigate((action as any).path); }}
