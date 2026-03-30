@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useEffect, type ReactElement } from 'react';
 import { PlanProvider, usePlan } from './store/planContext';
 import AppLayout from './Layout';
@@ -20,7 +20,6 @@ function RequireAuth({ children }: { children: ReactElement }) {
 
 function PlanGate({ children }: { children: ReactElement }) {
   const { effectivePlan, planLoaded, loadPlan } = usePlan();
-  const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
