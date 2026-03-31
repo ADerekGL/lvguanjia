@@ -1,4 +1,4 @@
-import { Layout, Menu, Button } from 'antd';
+import { Layout, Menu, Button, ConfigProvider } from 'antd';
 import {
   DashboardOutlined,
   HomeOutlined,
@@ -41,18 +41,43 @@ export default function AppLayout() {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider theme="dark" width={200} style={{ background: '#1b4332' }}>
-        <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a8d5a2', fontWeight: 'bold', fontSize: 16, borderBottom: '1px solid #2d6a4f' }}>
+      <Sider width={200} style={{ background: '#1b4332' }}>
+        <div style={{
+          height: 64,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#a8d5a2',
+          fontWeight: 'bold',
+          fontSize: 16,
+          borderBottom: '1px solid #2d6a4f',
+        }}>
           旅管家 · 酒店管理
         </div>
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          items={visibleItems}
-          onClick={({ key }) => navigate(key)}
-          style={{ marginTop: 8 }}
-        />
+        <ConfigProvider
+          theme={{
+            components: {
+              Menu: {
+                darkItemBg: '#1b4332',
+                darkSubMenuItemBg: '#163d2b',
+                darkItemSelectedBg: '#2d6a4f',
+                darkItemHoverBg: '#245840',
+                darkItemColor: '#d8f3dc',
+                darkItemSelectedColor: '#ffffff',
+                darkItemHoverColor: '#ffffff',
+              },
+            },
+          }}
+        >
+          <Menu
+            theme="dark"
+            mode="inline"
+            selectedKeys={[location.pathname]}
+            items={visibleItems}
+            onClick={({ key }) => navigate(key)}
+            style={{ background: '#1b4332', marginTop: 8 }}
+          />
+        </ConfigProvider>
       </Sider>
       <Layout>
         <Header style={{ background: '#fff', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f0f0f0' }}>
