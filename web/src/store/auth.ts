@@ -45,7 +45,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   clearAuth: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    set({ user: null, token: null });
+    localStorage.removeItem('hotelId');
+    set({ user: null, token: null, hotelId: null });
   },
   setHotelId: (id: number) => {
     localStorage.setItem('hotelId', String(id));

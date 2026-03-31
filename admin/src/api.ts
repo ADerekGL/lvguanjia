@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { message } from 'antd';
 
 const api = axios.create({
   baseURL: '/api',
@@ -17,7 +18,11 @@ api.interceptors.response.use(
     if (err.response?.status === 401) {
       localStorage.removeItem('hotel_admin_token');
       window.location.href = '/login';
+      return Promise.reject(err);
     }
+    const msg: string =
+      err.response?.data?.message || err.message || '请求失败，请稍后重试';
+    message.error(msg);
     return Promise.reject(err);
   },
 );

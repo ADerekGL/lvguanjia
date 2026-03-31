@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Toast } from 'antd-mobile';
 
 const api = axios.create({
   baseURL: '/api',
@@ -18,8 +19,15 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    const message = error.response?.data?.message || '请求失败';
-    return Promise.reject(new Error(message));
+    if (error.response?.status === 401) {
+      localStorage.clear();
+      window.location.href = '/login';
+      return Promise.reject(error);
+    }
+    const msg: string =
+      error.response?.data?.message || error.message || '请求失败，请稍后重试';
+    Toast.show({ icon: 'fail', content: msg });
+    return Promise.reject(new Error(msg));
   },
 );
 
