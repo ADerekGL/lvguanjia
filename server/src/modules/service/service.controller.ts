@@ -2,6 +2,8 @@ import { Controller, Get, Post, Put, Body, Param, ParseIntPipe, Query, UseGuards
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { ServiceService } from './service.service';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { PlanGuard } from '@/common/guards/plan.guard';
+import { RequireFeature } from '@/common/decorators/require-feature.decorator';
 import { CreateServiceRequestDto, UpdateServiceStatusDto } from './dto/service.dto';
 
 @ApiTags('服务')
