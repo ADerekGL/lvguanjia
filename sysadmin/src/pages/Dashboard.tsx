@@ -38,28 +38,21 @@ export default function Dashboard() {
   return (
     <div>
       <Row gutter={[16, 16]}>
-        <Col span={4}>
-          <Card><Statistic title="酒店总数" value={stats?.totalHotels ?? '-'} prefix={<BankOutlined />} /></Card>
+        <Col span={6}>
+          <Card><Statistic title="平台酒店数" value={stats?.totalHotels ?? '-'} prefix={<BankOutlined />} /></Card>
         </Col>
-        <Col span={4}>
-          <Card><Statistic title="用户总数" value={stats?.totalUsers ?? '-'} prefix={<TeamOutlined />} /></Card>
+        <Col span={6}>
+          <Card><Statistic title="活跃酒店" value={stats?.activeHotels ?? '-'} prefix={<TeamOutlined />} /></Card>
         </Col>
-        <Col span={4}>
-          <Card><Statistic title="房间总数" value={stats?.totalRooms ?? '-'} prefix={<HomeOutlined />} /></Card>
+        <Col span={6}>
+          <Card><Statistic title="有效订阅" value={stats?.totalSubscriptions ?? '-'} prefix={<ShoppingOutlined />} /></Card>
         </Col>
-        <Col span={4}>
-          <Card><Statistic title="订单总数" value={stats?.totalOrders ?? '-'} prefix={<ShoppingOutlined />} /></Card>
-        </Col>
-        <Col span={4}>
-          <Card><Statistic title="待处理服务" value={stats?.pendingServices ?? '-'} prefix={<ToolOutlined />} valueStyle={{ color: '#ff4d4f' }} /></Card>
-        </Col>
-        <Col span={4}>
-          <Card><Statistic title="总收入" value={stats?.totalRevenue ?? 0} prefix={<DollarOutlined />} precision={2} valueStyle={{ color: '#3f8600' }} /></Card>
+        <Col span={6}>
+          <Card bordered={false} style={{ background: '#f7fee7' }}>
+            <Statistic title="订阅总收入" value={stats?.subscriptionRevenue ?? 0} precision={2} prefix="¥" valueStyle={{ color: '#166534' }} />
+          </Card>
         </Col>
       </Row>
-      <Card title="最近订单" style={{ marginTop: 16 }}>
-        <Table dataSource={recentOrders} columns={orderCols} rowKey="id" pagination={false} size="small" />
-      </Card>
     </div>
   );
 }

@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react';
-import { Table, Select, Space, message, Tag } from 'antd';
-import { userApi, roomApi } from '../api';
+import { Table, Select, Space, message, Tag, Button, Modal, Input } from 'antd';
+import { userApi, roomApi, checkinApi } from '../api';
 import dayjs from 'dayjs';
+
+const { Search } = Input;
 
 export default function Users() {
   const [users, setUsers] = useState<any[]>([]);
   const [rooms, setRooms] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const load = () => {
+  const load = (searchText?: string) => {
     setLoading(true);
-    Promise.all([userApi.list(), roomApi.list()]).then(([u, r]: any[]) => {
+    Promise.all([userApi.list(1, 100, searchText), roomApi.list()]).then(([u, r]: any[]) => {
       const uData = u.data;
       const raw: any[] = Array.isArray(uData) ? uData[0] : (uData?.items || uData?.users || []);
+      // No manual filter needed if backend filters correctly, but keeping it for safety
       setUsers(raw.filter((u: any) => u.status !== 0));
       setRooms(r.data || []);
     }).finally(() => setLoading(false));
@@ -35,6 +38,25 @@ export default function Users() {
     label: `${r.roomNumber} (${r.floor}层) - ${r.status === 1 ? '空闲' : r.status === 2 ? '入住' : '维修'}`,
   }));
 
+  const handleCheckout = async (userId: number) => {
+    Modal.confirm({
+      title: '确认强制退房？',
+      content: '强制退房将立即释放房间并断开用户关联，此操作不可撤销。',
+      okText: '确认退房',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          await checkinApi.remove(userId);
+          message.success('强制退房成功');
+          load();
+        } catch (e: any) {
+          message.error(e.response?.data?.message || '退房失败');
+        }
+      }
+    });
+  };
+
   const columns = [
     { title: '姓名', dataIndex: 'name', key: 'name' },
     { title: '手机号', dataIndex: 'phone', key: 'phone' },
@@ -49,13 +71,16 @@ export default function Users() {
       render: (_: any, r: any) => (
         <Space>
           <Select
-            style={{ width: 200 }}
+            style={{ width: 140 }}
             placeholder="选择房间"
             value={r.roomId || undefined}
             options={roomOptions}
             onChange={(roomId) => handleAssign(r.id, roomId)}
             allowClear
           />
+          {r.roomId && (
+            <Button type="link" danger onClick={() => handleCheckout(r.id)}>强制退房</Button>
+          )}
         </Space>
       ),
     },
@@ -63,7 +88,15 @@ export default function Users() {
 
   return (
     <div style={{ background: '#fff', padding: 24, borderRadius: 8 }}>
-      <h2 style={{ marginTop: 0 }}>客人管理</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h2 style={{ margin: 0 }}>客人管理</h2>
+        <Search
+          placeholder="搜索姓名或手机号"
+          allowClear
+          onSearch={(val) => { load(val); }}
+          style={{ width: 300 }}
+        />
+      </div>
       <Table dataSource={users} columns={columns} rowKey="id" loading={loading} />
     </div>
   );

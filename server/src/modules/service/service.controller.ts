@@ -12,6 +12,8 @@ export class ServiceController {
   constructor(private readonly serviceService: ServiceService) {}
 
   @Get('all')
+  @UseGuards(PlanGuard)
+  @RequireFeature('checkin')
   @ApiOperation({ summary: '管理员获取所有服务请求（按当前用户酒店，可override）' })
   @ApiQuery({ name: 'hotelId', required: false, description: '酒店ID，不传则取JWT中的hotelId' })
   @ApiResponse({ status: 200, description: '服务请求列表' })

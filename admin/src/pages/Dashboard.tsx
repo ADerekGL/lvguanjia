@@ -68,18 +68,28 @@ export default function Dashboard() {
           </div>
         </Card>
       )}
-      <Row gutter={16}>
-        <Col span={6}>
-          <Card><Statistic title="房间总数" value={stats.totalRooms ?? '-'} prefix={<HomeOutlined />} /></Card>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={12} md={12} lg={4.8} style={{ flex: '0 0 20%', maxWidth: '20%' }}>
+          <Card bordered={false} style={{ background: '#f7fee7' }}>
+            <Statistic title="总营收" value={stats.totalRevenue ?? 0} precision={2} prefix="¥" valueStyle={{ color: '#166534' }} />
+          </Card>
         </Col>
-        <Col span={6}>
-          <Card><Statistic title="在住客人" value={stats.totalUsers ?? '-'} prefix={<UserOutlined />} /></Card>
+        <Col xs={24} sm={12} md={8} lg={4.8} style={{ flex: '0 0 20%', maxWidth: '20%' }}>
+          <Card bordered={false}><Statistic title="房间总数" value={stats.totalRooms ?? '-'} prefix={<HomeOutlined />} /></Card>
         </Col>
-        <Col span={6}>
-          <Card><Statistic title="订单总数" value={stats.totalOrders ?? '-'} prefix={<ShoppingOutlined />} /></Card>
+        <Col xs={24} sm={12} md={8} lg={4.8} style={{ flex: '0 0 20%', maxWidth: '20%' }}>
+          <Card bordered={false}><Statistic title="在住客人" value={stats.totalUsers ?? '-'} prefix={<UserOutlined />} /></Card>
         </Col>
-        <Col span={6}>
-          <Card><Statistic title="待处理服务" value={stats.pendingServices ?? '-'} prefix={<ToolOutlined />} valueStyle={{ color: '#fa8c16' }} /></Card>
+        <Col xs={24} sm={12} md={8} lg={4.8} style={{ flex: '0 0 20%', maxWidth: '20%' }}>
+          <Card bordered={false}><Statistic title="今日订单" value={stats.todayOrders ?? '-'} prefix={<ShoppingOutlined />} /></Card>
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={4.8} style={{ flex: '0 0 20%', maxWidth: '20%' }}>
+          <Card bordered={false} style={{ background: '#f0f9ff' }}>
+            <Statistic title="总营收" value={stats.totalRevenue ?? 0} precision={2} prefix="¥" valueStyle={{ color: '#0369a1' }} />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={4.8} style={{ flex: '0 0 20%', maxWidth: '20%' }}>
+          <Card bordered={false}><Statistic title="待处理服务" value={stats.pendingServices ?? '-'} prefix={<ToolOutlined />} valueStyle={{ color: '#fa8c16' }} /></Card>
         </Col>
       </Row>
       <Row gutter={16}>

@@ -10,8 +10,7 @@ import {
 } from 'antd-mobile-icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
-import { serviceApi, roomApi } from '../services/api';
-import { authApi } from '../services/api';
+import { serviceApi, roomApi, authApi } from '../services/api';
 
 interface ServiceRequest {
   id: string;
@@ -64,8 +63,30 @@ const Home: React.FC = () => {
     setCheckingOut(true);
     try {
       await authApi.selfCheckout();
-      Toast.show({ content: '退房成功，感谢您的入住！', icon: 'success' });
-      clearAuth();
+      Dialog.show({
+        title: '退房成功',
+        content: (
+          <div style={{ textAlign: 'center', padding: '10px 0' }}>
+            <div style={{ fontSize: '16px', marginBottom: '15px' }}>感谢您的入住！</div>
+            <div style={{ color: '#666', marginBottom: '20px' }}>您可以为本次入住进行评分：</div>
+            <Space direction='vertical' block>
+              <Button block color='primary' size='large' onClick={() => { Dialog.clear(); navigate('/rating'); }}>
+                立即去评价
+              </Button>
+              <Button block fill='none' color='default' onClick={() => { Dialog.clear(); clearAuth(); navigate('/login'); }}>
+                暂不评价
+              </Button>
+            </Space>
+          </div>
+        ),
+        closeOnAction: true,
+        actions: [
+          {
+            key: 'confirm',
+            text: '我知道了',
+          },
+        ],
+      });
     } catch (e: any) {
       Toast.show({ content: e.message || '退房失败', icon: 'fail' });
     } finally {
@@ -73,117 +94,96 @@ const Home: React.FC = () => {
     }
   };
 
-  const quickActions = [
-    { icon: <MessageFill />, text: '在线客服', color: '#2d6a4f', path: '/chat' },
-    { icon: <ShopbagOutline />, text: '酒店商城', color: '#40916c', path: '/shop' },
-    { icon: <UnorderedListOutline />, text: '我的订单', color: '#52b788', path: '/orders' },
-    { icon: <ChatAddOutline />, text: '客房服务', color: '#2d6a4f', path: '/service' },
-    { icon: <GiftOutline />, text: '优惠活动', color: '#40916c' },
-    { icon: <UserOutline />, text: '个人中心', color: '#52b788', path: '/profile' },
-  ];
-
-  const checkoutAction = user?.roomId
-    ? { text: '申请退房', onClick: handleSelfCheckout }
-    : null;
-
   useEffect(() => {
-    if (!user?.roomId) return;
-    serviceApi.list().then((res: any) => {
-      const items = (res.data || res || []).slice(0, 3).map((r: any) => ({
-        id: r.id,
-        title: r.type?.name || r.serviceType?.name || '服务请求',
-        status: r.status,
-      }));
-      setRecentRequests(items);
-    }).catch(() => {});
-    roomApi.getById(user.roomId).then((res: any) => {
-      setRoomInfo(res.data || res);
-    }).catch(() => {});
-  }, [user?.roomId]);
-
-  const displayName = user?.name || '尊贵的客人';
-  const roomNumber = roomInfo ? `${roomInfo.roomNumber} (${roomTypeText[roomInfo.type] || '标准间'})` : (user?.roomId ? `房间 ${user.roomId}` : '未分配房间');
+    if (user?.hotelId && user?.roomId) {
+      serviceApi.list().then((res: any) => {
+        const raw = res.data || res;
+        setRecentRequests(Array.isArray(raw) ? raw.slice(0, 3) : []);
+      });
+      roomApi.getById(user.roomId).then((res: any) => {
+        setRoomInfo(res.data || res);
+      });
+    }
+  }, [user]);
 
   return (
-    <div style={{ padding: '16px' }}>
-      {/* 欢迎区域 */}
-      <Card
-        title={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: '50%',
-                background: '#2d6a4f',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#fff',
-                fontSize: '18px',
-                fontWeight: 'bold',
-              }}
-            >
-              {displayName.slice(0, 1)}
-            </div>
-            <div>
-              <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#2d6a4f' }}>旅管家</div>
-              <div style={{ fontSize: '12px', color: '#999' }}>{roomNumber} | {displayName}</div>
-            </div>
+    <div style={{ padding: '16px', paddingBottom: '32px' }}>
+      {/* 酒店概览 */}
+      <Card style={{ marginBottom: '16px', borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#1a1a1a' }}>{roomInfo?.hotel?.name || '酒店详情'}</div>
+            <div style={{ fontSize: '14px', color: '#666', marginTop: '4px' }}>欢迎回家，{user?.name}</div>
           </div>
-        }
-        style={{ marginBottom: '16px' }}
-      >
-        <div style={{ fontSize: '14px', color: '#666', lineHeight: 1.5 }}>
-          欢迎使用旅管家服务，我们为您提供贴心的一站式住宿体验。
+          <Tag color='success' fill='outline' style={{ borderRadius: '4px' }}>在住</Tag>
         </div>
+        <Grid columns={3} gap={8}>
+          <Grid.Item>
+            <div style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
+              <div style={{ fontSize: '12px', color: '#999' }}>房间号</div>
+              <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '4px' }}>{roomInfo?.roomNumber || '-'}</div>
+            </div>
+          </Grid.Item>
+          <Grid.Item>
+            <div style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
+              <div style={{ fontSize: '12px', color: '#999' }}>类型</div>
+              <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '4px' }}>{roomTypeText[roomInfo?.type] || '-'}</div>
+            </div>
+          </Grid.Item>
+          <Grid.Item>
+            <div style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
+              <div style={{ fontSize: '12px', color: '#999' }}>楼层</div>
+              <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '4px' }}>{roomInfo?.floor || '-'}F</div>
+            </div>
+          </Grid.Item>
+        </Grid>
       </Card>
 
       {/* 快捷操作 */}
-      <Card title="快捷操作" style={{ marginBottom: '16px' }}>
-        <Grid columns={3} gap={16}>
-          {quickActions.map((action, index) => (
-            <Grid.Item key={index}>
-              <Button
-                style={{
-                  width: '100%',
-                  height: '80px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  background: '#f0f7f4',
-                  border: 'none',
-                }}
-                onClick={() => { if ((action as any).path) navigate((action as any).path); }}
-              >
-                <div style={{ fontSize: '28px', color: action.color }}>{action.icon}</div>
-                <div style={{ fontSize: '12px', color: '#333' }}>{action.text}</div>
-              </Button>
-            </Grid.Item>
-          ))}
+      <Card title="快捷服务" style={{ marginBottom: '16px', borderRadius: '12px' }}>
+        <Grid columns={4} gap={16}>
+          <Grid.Item onClick={() => navigate('/service')}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ width: '48px', height: '48px', background: '#e7f5ff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px' }}>
+                <ChatAddOutline style={{ fontSize: '24px', color: '#228be6' }} />
+              </div>
+              <div style={{ fontSize: '12px', color: '#333' }}>申请服务</div>
+            </div>
+          </Grid.Item>
+          <Grid.Item onClick={() => navigate('/shop')}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ width: '48px', height: '48px', background: '#fff4e6', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px' }}>
+                <ShopbagOutline style={{ fontSize: '24px', color: '#fd7e14' }} />
+              </div>
+              <div style={{ fontSize: '12px', color: '#333' }}>酒店商城</div>
+            </div>
+          </Grid.Item>
+          <Grid.Item onClick={() => navigate('/orders')}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ width: '48px', height: '48px', background: '#f3f0ff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px' }}>
+                <UnorderedListOutline style={{ fontSize: '24px', color: '#7950f2' }} />
+              </div>
+              <div style={{ fontSize: '12px', color: '#333' }}>我的订单</div>
+            </div>
+          </Grid.Item>
+          <Grid.Item onClick={handleSelfCheckout}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ width: '48px', height: '48px', background: '#fff5f5', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px' }}>
+                <GiftOutline style={{ fontSize: '24px', color: '#fa5252' }} />
+              </div>
+              <div style={{ fontSize: '12px', color: '#333' }}>自助退房</div>
+            </div>
+          </Grid.Item>
         </Grid>
-        {checkoutAction && (
-          <Button
-            block
-            color="danger"
-            loading={checkingOut}
-            onClick={checkoutAction.onClick}
-            style={{ marginTop: '12px', borderRadius: '8px' }}
-          >
-            {checkoutAction.text}
-          </Button>
-        )}
       </Card>
 
-      {/* 服务状态 */}
-      <Card title="服务状态" style={{ marginBottom: '16px' }}>
+      {/* 最近申请 */}
+      <Card title="最近服务申请" style={{ marginBottom: '16px', borderRadius: '12px' }}>
         {recentRequests.length === 0 ? (
-          <div style={{ color: '#999', fontSize: '14px', textAlign: 'center', padding: '8px 0' }}>暂无服务记录</div>
+          <div style={{ textAlign: 'center', padding: '24px', color: '#999', fontSize: '14px' }}>暂无服务申请</div>
         ) : (
-          <Space direction="vertical" style={{ width: '100%' }}>
-            {recentRequests.map((req) => (
+          <Space direction='vertical' block>
+            {recentRequests.map(req => (
               <div key={req.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>{req.title}</span>
                 <Tag color={statusColor[req.status] || 'default'}>{statusText[req.status] || req.status}</Tag>

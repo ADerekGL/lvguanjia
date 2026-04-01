@@ -42,13 +42,19 @@ export class HotelAdminService {
     return this.roomRepo.update({ id, hotelId }, { status });
   }
 
-  getUsers(hotelId: number, page = 1, limit = 20) {
-    return this.userRepo.findAndCount({
-      where: { hotelId, role: 1 },
-      order: { createdAt: 'DESC' },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
+  async getUsers(hotelId: number, page = 1, limit = 20, search?: string) {
+    const query = this.userRepo.createQueryBuilder('user')
+      .where('user.hotelId = :hotelId AND user.role = 1', { hotelId });
+
+    if (search) {
+      query.andWhere('(user.name LIKE :search OR user.phone LIKE :search)', { search: `%${search}%` });
+    }
+
+    return query
+      .orderBy('user.createdAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
   }
 
   async updateUser(id: number, hotelId: number, data: Partial<User>) {

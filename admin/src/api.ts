@@ -33,7 +33,8 @@ export const roomApi = {
 };
 
 export const userApi = {
-  list: (page = 1, limit = 20) => api.get(`/hotel-admin/users?page=${page}&limit=${limit}`),
+  list: (page = 1, limit = 20, search?: string) =>
+    api.get(`/hotel-admin/users`, { params: { page, limit, search } }),
   update: (id: number, data: object) => api.put(`/hotel-admin/users/${id}`, data),
 };
 

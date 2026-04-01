@@ -8,6 +8,7 @@ import {
   Input,
   Dialog,
   Toast,
+  Space,
 } from 'antd-mobile';
 import {
   UserOutline,
@@ -15,10 +16,12 @@ import {
   EnvironmentOutline,
   ExclamationCircleOutline,
 } from 'antd-mobile-icons';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
 import { userApi, authApi } from '../services/api';
 
 const Profile: React.FC = () => {
+  const navigate = useNavigate();
   const { user, setAuth, clearAuth, token } = useAuthStore();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: '', phone: '', email: '' });
@@ -78,70 +81,75 @@ const Profile: React.FC = () => {
     setCheckingOut(true);
     try {
       await authApi.selfCheckout();
-      Toast.show({ content: '退房成功，感谢您的入住！', icon: 'success' });
-      clearAuth();
+      Dialog.show({
+        title: '退房成功',
+        content: (
+          <div style={{ textAlign: 'center', padding: '10px 0' }}>
+            <div style={{ fontSize: '16px', marginBottom: '15px' }}>感谢您的入住！</div>
+            <div style={{ color: '#666', marginBottom: '20px' }}>您可以为本次入住进行评分：</div>
+            <Space direction='vertical' block>
+              <Button block color='primary' size='large' onClick={() => { Dialog.clear(); navigate('/rating'); }}>
+                立即去评价
+              </Button>
+              <Button block fill='none' color='default' onClick={() => { Dialog.clear(); clearAuth(); navigate('/login'); }}>
+                暂不评价
+              </Button>
+            </Space>
+          </div>
+        ),
+        closeOnAction: true,
+        actions: [
+          {
+            key: 'confirm',
+            text: '我知道了',
+          },
+        ],
+      });
     } catch (e: any) {
       Toast.show({ content: e.message || '退房失败', icon: 'fail' });
     } finally {
       setCheckingOut(false);
     }
   };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <NavBar back={null}>个人中心</NavBar>
+    <div style={{ minHeight: '100vh', background: '#f5f5f5' }}>
+      <NavBar back={null} right={<Button size="small" fill="none" onClick={() => setEditing(true)}>编辑</Button>}>
+        个人中心
+      </NavBar>
 
-      {/* Profile Header */}
-      <div
-        style={{
-          background: 'linear-gradient(135deg, #1677ff, #52c41a)',
-          padding: '24px 16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-        }}
-      >
-        <Avatar
-          src={user?.avatar || ''}
-          style={{ '--size': '60px', '--border-radius': '50%', flexShrink: 0 }}
-          fallback={<UserOutline style={{ fontSize: '28px', color: '#fff' }} />}
-        />
-        <div style={{ color: '#fff' }}>
-          <div style={{ fontSize: '20px', fontWeight: 'bold' }}>{displayName}</div>
-          <div style={{ fontSize: '13px', opacity: 0.85, marginTop: '4px' }}>{roomInfo}{hotelInfo ? ` · ${hotelInfo}` : ''}</div>
+      <div style={{ padding: '20px' }}>
+        <div style={{
+          background: '#fff',
+          padding: '24px',
+          borderRadius: '12px',
+          textAlign: 'center',
+          marginBottom: '20px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+        }}>
+          <Avatar src="" style={{ '--size': '80px', margin: '0 auto 16px' }} />
+          <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '4px' }}>{displayName}</div>
+          <div style={{ color: '#666', fontSize: '14px' }}>{roomInfo} {hotelInfo}</div>
         </div>
-      </div>
 
-      <div style={{ flex: 1, overflow: 'auto' }}>
         {!editing ? (
           <>
-            <List header="基本信息">
-              <List.Item prefix={<UserOutline />} extra={user?.name || '-'}>姓名</List.Item>
-              <List.Item prefix={<PhonebookOutline />} extra={(user as any)?.phone || '-'}>手机号</List.Item>
-              <List.Item prefix={<EnvironmentOutline />} extra={(user as any)?.email || '-'}>邮箱</List.Item>
+            <List style={{ borderRadius: '12px', overflow: 'hidden', marginBottom: '20px' }}>
+              <List.Item prefix={<UserOutline />} extra={user?.name || '未填写'}>姓名</List.Item>
+              <List.Item prefix={<PhonebookOutline />} extra={(user as any)?.phone || '未填写'}>手机号</List.Item>
+              <List.Item prefix={<EnvironmentOutline />} extra={user?.roomId || '未分配'}>房间号</List.Item>
             </List>
 
-            <List header="入住信息">
-              <List.Item extra={roomInfo}>房间</List.Item>
-              <List.Item extra={hotelInfo || '-'}>酒店</List.Item>
-            </List>
-
-            <div style={{ padding: '16px' }}>
-              <Button block color="primary" onClick={() => setEditing(true)} style={{ marginBottom: '12px' }}>
-                编辑资料
-              </Button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {user?.roomId && (
-                <Button block color="warning" loading={checkingOut} onClick={handleSelfCheckout} style={{ marginBottom: '12px' }}>
-                  申请退房
-                </Button>
+                <Button block color="danger" fill="outline" loading={checkingOut} onClick={handleSelfCheckout}>自助退房</Button>
               )}
-              <Button block color="danger" fill="outline" onClick={handleLogout}>
-                退出登录
-              </Button>
+              <Button block color="default" onClick={handleLogout}>退出登录</Button>
             </div>
           </>
         ) : (
           <>
-            <List header="编辑资料">
+            <List style={{ borderRadius: '12px', overflow: 'hidden' }}>
               <List.Item prefix={<UserOutline />}>
                 <Input
                   placeholder="请输入姓名"

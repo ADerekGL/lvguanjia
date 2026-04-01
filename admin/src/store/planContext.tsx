@@ -6,18 +6,22 @@ export type PlanTier = 'none' | 'basic' | 'pro' | 'enterprise';
 interface PlanContextValue {
   effectivePlan: PlanTier;
   planLoaded: boolean;
+  isPro: boolean;
   loadPlan: () => Promise<void>;
 }
 
 const PlanContext = createContext<PlanContextValue>({
   effectivePlan: 'none',
   planLoaded: false,
+  isPro: false,
   loadPlan: async () => {},
 });
 
 export function PlanProvider({ children }: { children: ReactNode }) {
   const [effectivePlan, setEffectivePlan] = useState<PlanTier>('none');
   const [planLoaded, setPlanLoaded] = useState(false);
+
+  const isPro = effectivePlan === 'pro' || effectivePlan === 'enterprise';
 
   const loadPlan = useCallback(async () => {
     try {
@@ -37,7 +41,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <PlanContext.Provider value={{ effectivePlan, planLoaded, loadPlan }}>
+    <PlanContext.Provider value={{ effectivePlan, planLoaded, isPro, loadPlan }}>
       {children}
     </PlanContext.Provider>
   );

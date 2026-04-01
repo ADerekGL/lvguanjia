@@ -2,6 +2,8 @@ import { Controller, Get, Post, Put, Delete, Body, Param, Query, ParseIntPipe, D
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { HotelAdminService } from './hotel-admin.service';
 import { HotelAdminAuthGuard } from '@/common/guards/hotel-admin-auth.guard';
+import { PlanGuard } from '@/common/guards/plan.guard';
+import { RequireFeature } from '@/common/decorators/require-feature.decorator';
 
 @ApiTags('酒店管理')
 @ApiBearerAuth()
@@ -42,6 +44,8 @@ export class HotelAdminController {
   }
 
   @Get('users')
+  @UseGuards(PlanGuard)
+  @RequireFeature('checkin')
   @ApiOperation({ summary: '获取当前酒店用户（在住客人）列表' })
   @ApiQuery({ name: 'page', required: false, description: '页码', example: 1 })
   @ApiQuery({ name: 'limit', required: false, description: '每页数量', example: 20 })

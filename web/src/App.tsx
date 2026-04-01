@@ -13,6 +13,7 @@ const Service = lazy(() => import('./pages/Service'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Login = lazy(() => import('./pages/Login'));
 const WechatCallback = lazy(() => import('./pages/WechatCallback'));
+const Rating = lazy(() => import('./pages/Rating'));
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.token);
@@ -33,6 +34,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/auth-callback" element={<WechatCallback />} />
+          <Route path="/rating" element={<Rating />} />
           <Route
             path="/"
             element={
