@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull, Not, DataSource, LessThan, Between } from 'typeorm';
 import * as QRCode from 'qrcode';
 import { Cron } from '@nestjs/schedule';
-import { Hotel, User, Room, Order, ServiceRequest, Product, ServiceType, SubscriptionOrder, Subscription, HotelAdmin } from '@/entities';
+import { Hotel, User, Room, Order, ServiceRequest, Product, ServiceType, SubscriptionOrder, Subscription } from '@/entities';
 import { ProductService } from '../product/product.service';
 import { SetPrivilegeDto } from './dto/set-privilege.dto';
 
@@ -18,7 +18,6 @@ export class AdminService {
     @InjectRepository(Product) private productRepo: Repository<Product>,
     @InjectRepository(ServiceType) private serviceTypeRepo: Repository<ServiceType>,
     @InjectRepository(Subscription) private subscriptionRepo: Repository<Subscription>,
-    @InjectRepository(HotelAdmin) private hotelAdminRepo: Repository<HotelAdmin>,
     private productService: ProductService,
     private dataSource: DataSource,
   ) {}
@@ -109,16 +108,16 @@ export class AdminService {
   }
 
   async getPendingHotelAdmins() {
-    return this.hotelAdminRepo.find({ where: { status: 0 }, relations: ['hotel'] });
+    return this.userRepo.find({ where: { role: 2, status: 0 }, relations: ['hotel'] });
   }
 
   async approveHotelAdmin(id: number) {
-    await this.hotelAdminRepo.update(id, { status: 1 });
+    await this.userRepo.update(id, { status: 1 });
     return { success: true };
   }
 
   async rejectHotelAdmin(id: number) {
-    await this.hotelAdminRepo.update(id, { status: 2 });
+    await this.userRepo.update(id, { status: 2 });
     return { success: true };
   }
 
